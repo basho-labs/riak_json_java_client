@@ -23,12 +23,12 @@ class TransportSpecTest extends FunSpec with MockitoSugar with BeforeAndAfter wi
   before {}
   after {}
 
-  describe("http transport spec tests") {
+  describe ("http transport spec tests") {
     val transport = new HttpTransport("somehost", 9876);
     val status_line = mock[StatusLine]
     val rest_client = mock[RestClient]
 
-    it("[ping] returns true if response code == 200") {
+    it ("[ping] returns true if response code == 200") {
       when(status_line.getStatusCode()).thenReturn(200)
       when(rest_client.sendRequest(any(classOf[URI]), any(), any())).thenReturn(status_line)
 
@@ -36,7 +36,7 @@ class TransportSpecTest extends FunSpec with MockitoSugar with BeforeAndAfter wi
       assert(transport.ping())
     }
 
-    it("[pingKV] returns true if response code == 404") {
+    it ("[pingKV] returns true if response code == 404") {
       when(status_line.getStatusCode()).thenReturn(404)
       when(rest_client.sendRequest(any(classOf[URI]), any(), any())).thenReturn(status_line)
 
@@ -44,7 +44,7 @@ class TransportSpecTest extends FunSpec with MockitoSugar with BeforeAndAfter wi
       assert(transport.pingKV())
     }
 
-    it("[somefun] does something") {
+    it ("[somefun] does something") {
       val http_response = mock[HttpResponse]
     }
   }
@@ -54,23 +54,23 @@ class TransportConfigTest extends FunSpec with BeforeAndAfter {
   before {}
   after {}
 
-  describe("http transport config") {
+  describe ("http transport config") {
     val transport = new HttpTransport("somehost", 9876);
     describe("when new") {
-      it("should contain the host") {
+      it ("should contain the host") {
         assert(transport.getBaseRiakURL().contains("somehost"))
       }
-      it("should contain the port") {
+      it ("should contain the port") {
         assert(transport.getBaseRiakURL().contains("9876"))
       }
-      it("should have default protocol of http") {
+      it ("should have default protocol of http") {
         assert(transport.getBaseRiakURL().startsWith("http"))
       }
-      it("document url should end with document") {
+      it ("document url should end with document") {
         assert(transport.getBaseRiakJsonURL().startsWith("http"))
         assert(transport.getBaseRiakJsonURL().endsWith("document"))
       }
-      it("collection url should end with collection") {
+      it ("collection url should end with collection") {
         assert(transport.getBaseCollectionURL().startsWith("http"))
         assert(transport.getBaseCollectionURL().endsWith("collection"))
       }
