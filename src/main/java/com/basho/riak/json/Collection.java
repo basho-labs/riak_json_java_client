@@ -6,6 +6,13 @@ package com.basho.riak.json;
  */
 public class Collection {
   
+  private String name;
+  
+  public Collection(String name) {
+    super();
+    this.name = name;
+  }
+  
   public boolean deleteRawJson(String key) { return false; }
   
   public boolean deleteSchema(String key) { return false; }
@@ -39,7 +46,11 @@ public class Collection {
   
   public boolean remove(Document document) { return false; }
   
-  public Schema setSchema(Schema schema) { return null; }
+  /**
+   * Assigns a schema to the collection.
+   * @param schema The schema to assign.
+   */
+  public void setSchema(Schema schema) { return; }
   
   public boolean update(Document document) { return false; }
   

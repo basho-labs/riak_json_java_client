@@ -22,8 +22,8 @@ public class Client {
     init_internals(host, port);
   }
   
-  public Collection createCollection(String collection_name) {
-    return new Collection();
+  public Collection createCollection(String name) {
+    return new Collection(name);
   }
   
   public String version() {
