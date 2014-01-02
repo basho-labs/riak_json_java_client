@@ -14,14 +14,14 @@ public class SchemaAdminITCase {
   @Test
   public void collectionHasNoSchema() {
     Client client = new Client("localhost", 10018);
-    Collection collection = client.create_collection("test_collection");
+    Collection collection = client.createCollection("test_collection");
     assertFalse(collection.hasSchema());
   }
 
   @Test
   public void collectionCanAddSchema() {
     Client client = new Client("localhost", 10018);
-    Collection collection = client.create_collection("test_collection");
+    Collection collection = client.createCollection("test_collection");
     Schema schema = new Schema();
     /* TODO: define fields api
     schema.addStringField( ... );

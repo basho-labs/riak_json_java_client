@@ -22,7 +22,7 @@ public class Client {
     init_internals(host, port);
   }
   
-  public Collection create_collection(String collection_name) {
+  public Collection createCollection(String collection_name) {
     return new Collection();
   }
   
