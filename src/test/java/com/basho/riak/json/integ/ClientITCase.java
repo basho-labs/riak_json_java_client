@@ -9,9 +9,10 @@ import static org.junit.Assert.assertTrue;
 public class ClientITCase {
 
   @Test
-  public void connectToRiakJson() {
+  public void connectWithPing() {
     Client client = new Client("localhost", 10018);
     assertTrue(client.ping());
+    assertTrue(client.pingKV());
   }
 
 }
