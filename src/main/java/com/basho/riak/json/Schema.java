@@ -5,9 +5,8 @@ import java.util.List;
 
 public class Schema {
 
-  private Schema(Builder builder) {
-    super();
-  }
+  private String schema_name;
+  private List<Field> fields;
 
   public static class Builder {
     // Required Parameters
@@ -30,5 +29,12 @@ public class Schema {
       return new Schema(this);
     }
   }
+  
+  private Schema(Builder builder) {
+    super();
+    schema_name = builder.schema_name;
+    fields = builder.fields;
+  }
+
   
 }

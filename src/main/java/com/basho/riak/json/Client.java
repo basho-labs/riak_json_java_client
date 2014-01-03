@@ -13,7 +13,6 @@ import com.basho.riak.json.transports.http.HttpTransport;
  */
 public class Client {
   
-  // TODO: consider making transport a proxy delegate
   private Transport transport;
   private Map<String, Collection> collection_cache;
   

@@ -50,7 +50,10 @@ public class Collection {
    * Assigns a schema to the collection.
    * @param schema The schema to assign.
    */
-  public void setSchema(Schema schema) { return; }
+  public void setSchema(Schema schema) {
+    // TODO: turn schema into proper JSON
+    return;
+  }
   
   public boolean update(Document document) { return false; }
   
