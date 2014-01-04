@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Schema {
 
-  private String schema_name;
+  private String name;
   private List<Field> fields;
 
   public static class Builder {
@@ -30,11 +30,22 @@ public class Schema {
     }
   }
   
+  protected Schema() {
+	  super();
+  }
+  
   private Schema(Builder builder) {
     super();
-    schema_name = builder.schema_name;
+    name = builder.schema_name;
     fields = builder.fields;
   }
-
+  
+  public String getName() {
+	  return name;
+  }
+  
+  public List<Field> getFields() {
+	  return fields;
+  }
   
 }

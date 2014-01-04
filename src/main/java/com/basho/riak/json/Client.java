@@ -6,7 +6,7 @@ import java.util.Map;
 import com.basho.riak.json.transports.http.HttpTransport;
 
 /**
- * can custom cap, quorum controls (r, pr, w, pw) be used in a query?
+ * can custom quorum controls (r, pr, w, pw) be used in a query?
  * anyone mind if i add a pingRJ method to the RJ api?
  * 
  * @author Randy Secrist
@@ -22,7 +22,7 @@ public class Client {
   }
   
   public Collection createCollection(String name) {
-    return new Collection(name);
+    return new Collection(name, transport);
   }
   
   public String version() {

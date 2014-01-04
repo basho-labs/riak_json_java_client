@@ -7,10 +7,12 @@ package com.basho.riak.json;
 public class Collection {
   
   private String name;
+  private Transport transport;
   
-  public Collection(String name) {
+  public Collection(String name, Transport transport) {
     super();
     this.name = name;
+    this.transport = transport;
   }
   
   public boolean deleteRawJson(String key) { return false; }
@@ -51,8 +53,7 @@ public class Collection {
    * @param schema The schema to assign.
    */
   public void setSchema(Schema schema) {
-    // TODO: turn schema into proper JSON
-    return;
+  	transport.setSchema(schema);
   }
   
   public boolean update(Document document) { return false; }

@@ -32,10 +32,12 @@ public class SchemaAdminITCase {
 
     builder.addField(new Field("age_in_years", INTEGER).setRequired(true));
     builder.addField(new Field("first_name", STRING).setRequired(true));
-    builder.addField(new Field("middle_name", STRING).setRequired(false));
+    builder.addField(new Field("middle_name", STRING));
     builder.addField(new Field("last_name", STRING).setRequired(true));
-    builder.addField(new Field("wall_o_text", TEXT).setRequired(false));
+    builder.addField(new Field("wall_o_text", TEXT));
     builder.addField(new Field("list_of_friends", MULTI_STRING).setRequired(false));
+    builder.addField(new Field("level1", INTEGER));
+    builder.addField(new Field("level1.level2", INTEGER));
 
     collection.setSchema(builder.build());
     assertTrue(collection.hasSchema());

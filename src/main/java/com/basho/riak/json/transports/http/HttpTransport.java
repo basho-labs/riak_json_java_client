@@ -1,15 +1,22 @@
 package com.basho.riak.json.transports.http;
 
+import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.apache.http.StatusLine;
 import org.apache.http.client.utils.URIBuilder;
 
+import com.basho.riak.json.Schema;
 import com.basho.riak.json.Transport;
 import com.basho.riak.json.errors.RiakJsonError;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import static com.basho.riak.json.transports.http.Method.HEAD;
 import static com.basho.riak.json.transports.http.Method.GET;
+import static com.basho.riak.json.transports.http.Method.POST;
 import static com.basho.riak.json.transports.http.Method.PUT;
 import static com.basho.riak.json.transports.http.Method.DELETE;
 import static com.basho.riak.json.transports.http.Protocol.HTTP;
@@ -58,7 +65,6 @@ public class HttpTransport implements Transport {
   }
 
   /* Transport API (Move to Interface) */
-  // TODO: build schema api
   // TODO: build document api
   // TODO: build query api
   // use the base urls to do the following:
@@ -68,16 +74,47 @@ public class HttpTransport implements Transport {
   
   public boolean ping() {
     URI uri = this.buildURL(getBaseRiakURL(), "/ping");
-    return (sendRequest(uri).getStatusCode() == 200) ? true : false;
+    return (sendGetRequest(uri).getStatusCode() == 200) ? true : false;
   }
   
   public boolean pingKV() {
     URI uri = this.buildURL(getBaseRiakURL(), "/buckets/not_a_bucket/keys/not_a_key");
-    return (sendRequest(uri).getStatusCode() == 404) ? true : false;
+    return (sendGetRequest(uri).getStatusCode() == 404) ? true : false;
   }
   
   public boolean pingRJ() {
     return false;
+  }
+  
+  public Schema getSchema() {
+      URI uri = this.buildURL(getBaseRiakURL(), "/buckets/test_java/keys/randy");
+
+    // get json
+    String json = null;
+    
+    // deserialize
+    ObjectMapper mapper = new ObjectMapper();
+    
+    // return mapper.readValue(json, Schema.class);
+    return null;
+  }
+  
+  public boolean setSchema(Schema schema) {
+    URI uri = this.buildURL(getBaseRiakURL(), "/buckets/test_java/keys/randy");
+  PipedInputStream in = new PipedInputStream(4096);
+  
+  try {
+    // serialize schema to json
+    PipedOutputStream out = new PipedOutputStream(in);
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.writeValue(out, schema);
+  }
+  catch (Throwable t) {
+    // TODO: better error handling
+    t.printStackTrace();
+  }
+  
+    return (sendPostOrPut(uri, POST, in).getStatusCode() == 204) ? true : false;
   }
   
   /* Deeply Internal (Used only by Transport API) */
@@ -93,15 +130,15 @@ public class HttpTransport implements Transport {
     }
   }
   
-  private StatusLine sendRequest(URI uri) {
-    return this.sendRequest(uri, null, null);
+  private StatusLine sendGetRequest(URI uri) {
+    return this.sendGetOrDelete(uri, GET);
   }
 
-  private StatusLine sendRequest(URI uri, Method method) {
-    return this.sendRequest(uri, method, null);
+  private StatusLine sendGetOrDelete(URI uri, Method method) {
+    return client.sendGetOrDelete(uri, method);
   }
-    
-  private StatusLine sendRequest(URI uri, Method method, byte[] data) {
-    return client.sendRequest(uri, method, data);
-  }   
+      
+  private StatusLine sendPostOrPut(URI uri, Method method, InputStream input) {
+    return client.sendPostOrPut(uri, method, input);
+  }
 }
