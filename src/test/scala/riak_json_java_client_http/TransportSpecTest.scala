@@ -30,7 +30,7 @@ class TransportSpecTest extends FunSpec with MockitoSugar with BeforeAndAfter wi
 
     it ("[ping] returns true if response code == 200") {
       when(status_line.getStatusCode()).thenReturn(200)
-      when(rest_client.sendRequest(any(classOf[URI]), any(), any())).thenReturn(status_line)
+      when(rest_client.sendGetOrDelete(any(classOf[URI]), any())).thenReturn(status_line)
 
       transport.setRestClient(rest_client)
       assert(transport.ping())
@@ -38,7 +38,7 @@ class TransportSpecTest extends FunSpec with MockitoSugar with BeforeAndAfter wi
 
     it ("[pingKV] returns true if response code == 404") {
       when(status_line.getStatusCode()).thenReturn(404)
-      when(rest_client.sendRequest(any(classOf[URI]), any(), any())).thenReturn(status_line)
+      when(rest_client.sendGetOrDelete(any(classOf[URI]), any())).thenReturn(status_line)
 
       transport.setRestClient(rest_client)
       assert(transport.pingKV())
