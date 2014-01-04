@@ -17,7 +17,7 @@ public class Schema {
     
     public Builder(String name) {
       this.schema_name = name;
-      fields = new ArrayList<Field>();
+      fields = new ArrayList<>();
     }
     
     public Builder addField(Field field) {

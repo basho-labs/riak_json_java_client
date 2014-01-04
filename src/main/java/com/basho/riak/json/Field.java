@@ -48,7 +48,7 @@ public class Field {
     private final int code;
     
     private static Map<Integer,Type> codeValueMap =
-      new HashMap<Integer,Type>(4);
+      new HashMap<>(4);
     
     static {
       for (Type type : Type.values())

@@ -1,5 +1,6 @@
 package com.basho.riak.json.transports.http;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -12,6 +13,8 @@ import org.apache.http.client.utils.URIBuilder;
 import com.basho.riak.json.Schema;
 import com.basho.riak.json.Transport;
 import com.basho.riak.json.errors.RiakJsonError;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static com.basho.riak.json.transports.http.Method.HEAD;
@@ -87,7 +90,7 @@ public class HttpTransport implements Transport {
   }
   
   public Schema getSchema() {
-      URI uri = this.buildURL(getBaseRiakURL(), "/buckets/test_java/keys/randy");
+    URI uri = this.buildURL(getBaseRiakURL(), "/buckets/test_java/keys/randy");
 
     // get json
     String json = null;
@@ -95,24 +98,32 @@ public class HttpTransport implements Transport {
     // deserialize
     ObjectMapper mapper = new ObjectMapper();
     
-    // return mapper.readValue(json, Schema.class);
-    return null;
+    Schema rtnval = null;
+    try {
+      rtnval = mapper.readValue(json, Schema.class);
+    }
+    catch (JsonMappingException | JsonParseException e) {
+      // TODO: handle schema read failure modes
+    }
+    catch (IOException e) {
+      // TODO: handle schema read failure modes
+    }
+    return rtnval;
   }
   
   public boolean setSchema(Schema schema) {
     URI uri = this.buildURL(getBaseRiakURL(), "/buckets/test_java/keys/randy");
-  PipedInputStream in = new PipedInputStream(4096);
+    PipedInputStream in = new PipedInputStream(4096);
   
-  try {
-    // serialize schema to json
-    PipedOutputStream out = new PipedOutputStream(in);
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.writeValue(out, schema);
-  }
-  catch (Throwable t) {
-    // TODO: better error handling
-    t.printStackTrace();
-  }
+    try (PipedOutputStream out = new PipedOutputStream(in)) {
+      // serialize schema to json
+      ObjectMapper mapper = new ObjectMapper();
+      mapper.writeValue(out, schema);
+    }
+    catch (Throwable t) {
+      // TODO: better error handling
+      t.printStackTrace();
+    }
   
     return (sendPostOrPut(uri, POST, in).getStatusCode() == 204) ? true : false;
   }
