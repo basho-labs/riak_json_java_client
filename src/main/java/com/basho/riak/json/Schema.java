@@ -3,25 +3,35 @@ package com.basho.riak.json;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.basho.riak.json.jackson.SchemaDeserializer;
+import com.basho.riak.json.jackson.SchemaSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+@JsonSerialize(using = SchemaSerializer.class)
+@JsonDeserialize(using = SchemaDeserializer.class)
 public class Schema {
 
-  private String name;
   private List<Field> fields;
 
   public static class Builder {
     // Required Parameters
-    private final String schema_name;
     
     // Optional Parameters
     private List<Field> fields;
     
-    public Builder(String name) {
-      this.schema_name = name;
+    public Builder() {
+      // add any req params
       fields = new ArrayList<>();
     }
     
     public Builder addField(Field field) {
       fields.add(field);
+      return this;
+    }
+    
+    public Builder addFields(List<Field> fields) {
+      this.fields.addAll(fields);
       return this;
     }
     
@@ -36,16 +46,13 @@ public class Schema {
   
   private Schema(Builder builder) {
     super();
-    name = builder.schema_name;
     fields = builder.fields;
   }
-  
-  public String getName() {
-	  return name;
-  }
-  
+    
   public List<Field> getFields() {
-	  return fields;
+    return fields;
   }
+  
+  // TODO: add toString()
   
 }

@@ -16,9 +16,7 @@ public class Collection {
   }
   
   public boolean deleteRawJson(String key) { return false; }
-  
-  public boolean deleteSchema(String key) { return false; }
-  
+    
   public QueryResult find(Query query) { return null; }
   
   public Document findByKey(String key) { return null; }
@@ -27,9 +25,17 @@ public class Collection {
   
   public String getRawJson(String key) { return null; }
   
-  public Schema getSchema() { return null; }
+  public boolean deleteSchema() {
+    return transport.deleteSchema(name);
+  }
+
+  public Schema getSchema() {
+    return transport.getSchema(name);
+  }
   
-  public boolean hasSchema() { return false; }
+  public boolean hasSchema() {
+    return transport.getSchema(name) != null;
+  }
   
   /**
    * Inserts a new document into the collection.
@@ -52,8 +58,8 @@ public class Collection {
    * Assigns a schema to the collection.
    * @param schema The schema to assign.
    */
-  public void setSchema(Schema schema) {
-  	transport.setSchema(schema);
+  public boolean setSchema(Schema schema) {
+    return transport.setSchema(name, schema);
   }
   
   public boolean update(Document document) { return false; }

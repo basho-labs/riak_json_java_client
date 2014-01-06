@@ -36,6 +36,8 @@ public class Field {
     this.required = required;
     return this;
   }
+  
+  // TODO: add toString()
 
   @JsonSerialize(using = FieldTypeSerializer.class)
   @JsonDeserialize(using = FieldTypeDeserializer.class)

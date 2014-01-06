@@ -1,11 +1,13 @@
 package com.basho.riak.json.transports.http;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolVersion;
-import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -17,7 +19,6 @@ import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
 
 import static com.basho.riak.json.transports.http.Method.GET;
 import static com.basho.riak.json.transports.http.Method.DELETE;
@@ -28,14 +29,14 @@ import static com.basho.riak.json.transports.http.Method.PUT;
  *
  * @author Randy Secrist
  */
-public class ApacheTransport implements RestClient {
+public class ApacheRestClient extends AbstractRestClient {
   
-  public ApacheTransport() {
+  public ApacheRestClient() {
     super();
   }
 
   @Override
-  public StatusLine sendGetOrDelete(URI uri, Method method) {
+  public Response sendGetOrDelete(URI uri, Method method) {
     if (method == null)
       method = GET;
     
@@ -47,15 +48,11 @@ public class ApacheTransport implements RestClient {
     else if (method == DELETE)
       uri_request = new HttpDelete(uri);
     
-    HttpResponse response = this.makeRequest(httpclient, uri_request);
-    
-    if (response != null)
-      return response.getStatusLine();
-    
+    HttpResponse response = this.makeRequest(httpclient, uri_request);    
     return this.getResult(response, uri_request.getProtocolVersion());    
   }
   
-  public StatusLine sendPostOrPut(URI uri, Method method, InputStream input) {
+  public Response sendPostOrPut(URI uri, Method method, InputStream input) {
     CloseableHttpClient httpclient = this.createClient();
     
     HttpEntityEnclosingRequestBase uri_request = new HttpPost(uri);
@@ -81,7 +78,6 @@ public class ApacheTransport implements RestClient {
     HttpResponse response = null;
     try {
       response = client.execute(uri_request);
-      EntityUtils.consume(response.getEntity());
     }
     catch (HttpHostConnectException e) {
       // TOOD: better exception handling for when riak is down
@@ -93,15 +89,24 @@ public class ApacheTransport implements RestClient {
     return response;
   }
   
-  private StatusLine getResult(HttpResponse response, final ProtocolVersion pv) {
-    if (response != null)
-      return response.getStatusLine();
+  private Response getResult(HttpResponse response, final ProtocolVersion pv) {
+    if (response == null)
+      return new Response(404, null);
 
-    return new StatusLine() {
-      public ProtocolVersion getProtocolVersion() { return pv; }
-      public int getStatusCode() { return 404; }
-      public String getReasonPhrase() { return "httpclient returned null / not found"; }
-    };
+    int status = response.getStatusLine().getStatusCode();
+    HttpEntity entity = response.getEntity();
+    try {
+      InputStream in = entity.getContent();
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      copyInputStream(in, out);
+      return new Response(status, out.toByteArray());
+    }
+    catch (IOException e) {
+      return new Response(status, e.getMessage().getBytes());
+    }
+    catch (NullPointerException e) {
+      return new Response(status, null);
+    }
   }
   
 }

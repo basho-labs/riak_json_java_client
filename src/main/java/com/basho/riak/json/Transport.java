@@ -1,7 +1,5 @@
 package com.basho.riak.json;
 
-import java.io.InputStream;
-
 /**
  *
  * @author Randy Secrist
@@ -11,6 +9,7 @@ public interface Transport {
   boolean pingKV();
   boolean pingRJ();
   
-  Schema getSchema();
-  boolean setSchema(Schema schema);
+  Schema getSchema(String collection_name);
+  boolean setSchema(String collection_name, Schema schema);
+  boolean deleteSchema(String collection_name);
 }

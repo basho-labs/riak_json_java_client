@@ -25,20 +25,20 @@ class TransportSpecTest extends FunSpec with MockitoSugar with BeforeAndAfter wi
 
   describe ("http transport spec tests") {
     val transport = new HttpTransport("somehost", 9876);
-    val status_line = mock[StatusLine]
+    val response = mock[Response]
     val rest_client = mock[RestClient]
 
     it ("[ping] returns true if response code == 200") {
-      when(status_line.getStatusCode()).thenReturn(200)
-      when(rest_client.sendGetOrDelete(any(classOf[URI]), any())).thenReturn(status_line)
+      when(response.status()).thenReturn(200)
+      when(rest_client.sendGetOrDelete(any(classOf[URI]), any())).thenReturn(response)
 
       transport.setRestClient(rest_client)
       assert(transport.ping())
     }
 
     it ("[pingKV] returns true if response code == 404") {
-      when(status_line.getStatusCode()).thenReturn(404)
-      when(rest_client.sendGetOrDelete(any(classOf[URI]), any())).thenReturn(status_line)
+      when(response.status()).thenReturn(404)
+      when(rest_client.sendGetOrDelete(any(classOf[URI]), any())).thenReturn(response)
 
       transport.setRestClient(rest_client)
       assert(transport.pingKV())
@@ -70,8 +70,9 @@ class TransportConfigTest extends FunSpec with BeforeAndAfter {
         assert(transport.getBaseRiakJsonURL().startsWith("http"))
         assert(transport.getBaseRiakJsonURL().endsWith("document"))
       }
-      it ("collection url should end with collection") {
+      it ("collection url should contain document and end with collection") {
         assert(transport.getBaseCollectionURL().startsWith("http"))
+        assert(transport.getBaseCollectionURL().contains("document"))
         assert(transport.getBaseCollectionURL().endsWith("collection"))
       }
     }

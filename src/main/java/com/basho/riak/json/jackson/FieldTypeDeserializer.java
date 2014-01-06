@@ -18,7 +18,7 @@ public class FieldTypeDeserializer extends JsonDeserializer<Type> {
         
     ObjectCodec oc = parser.getCodec();
     JsonNode node = oc.readTree(parser);
-    return Type.valueOf(node.get("type").textValue().toUpperCase());
+    return Type.valueOf(node.textValue().toUpperCase());
   }
 
 }

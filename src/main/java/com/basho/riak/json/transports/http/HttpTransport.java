@@ -7,9 +7,6 @@ import java.io.PipedOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.apache.http.StatusLine;
-import org.apache.http.client.utils.URIBuilder;
-
 import com.basho.riak.json.Schema;
 import com.basho.riak.json.Transport;
 import com.basho.riak.json.errors.RiakJsonError;
@@ -17,9 +14,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static com.basho.riak.json.transports.http.Method.HEAD;
 import static com.basho.riak.json.transports.http.Method.GET;
-import static com.basho.riak.json.transports.http.Method.POST;
 import static com.basho.riak.json.transports.http.Method.PUT;
 import static com.basho.riak.json.transports.http.Method.DELETE;
 import static com.basho.riak.json.transports.http.Protocol.HTTP;
@@ -40,7 +35,7 @@ public class HttpTransport implements Transport {
     this.protocol = HTTP;
     this.host = host;
     this.port = port;
-    setRestClient(new ApacheTransport());
+    setRestClient(new ApacheRestClient());
   }
   
   public void setProtocol(Protocol protocol) {
@@ -77,23 +72,27 @@ public class HttpTransport implements Transport {
   
   public boolean ping() {
     URI uri = this.buildURL(getBaseRiakURL(), "/ping");
-    return (sendGetRequest(uri).getStatusCode() == 200) ? true : false;
+    return (sendGetRequest(uri).status() == 200) ? true : false;
   }
   
   public boolean pingKV() {
     URI uri = this.buildURL(getBaseRiakURL(), "/buckets/not_a_bucket/keys/not_a_key");
-    return (sendGetRequest(uri).getStatusCode() == 404) ? true : false;
+    return (sendGetRequest(uri).status() == 404) ? true : false;
   }
   
   public boolean pingRJ() {
     return false;
   }
   
-  public Schema getSchema() {
-    URI uri = this.buildURL(getBaseRiakURL(), "/buckets/test_java/keys/randy");
+  public Schema getSchema(String collection_name) {
+    URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/schema");
 
     // get json
-    String json = null;
+    Response response = sendGetRequest(uri);
+    if (response.status() != 200)
+      return null;
+
+    String json = new String(response.body());
     
     // deserialize
     ObjectMapper mapper = new ObjectMapper();
@@ -111,8 +110,8 @@ public class HttpTransport implements Transport {
     return rtnval;
   }
   
-  public boolean setSchema(Schema schema) {
-    URI uri = this.buildURL(getBaseRiakURL(), "/buckets/test_java/keys/randy");
+  public boolean setSchema(String collection_name, Schema schema) {
+	URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/schema");
     PipedInputStream in = new PipedInputStream(4096);
   
     try (PipedOutputStream out = new PipedOutputStream(in)) {
@@ -125,15 +124,19 @@ public class HttpTransport implements Transport {
       t.printStackTrace();
     }
   
-    return (sendPostOrPut(uri, POST, in).getStatusCode() == 204) ? true : false;
+    return (sendPostOrPut(uri, PUT, in).status() == 204) ? true : false;
+  }
+  
+  public boolean deleteSchema(String collection_name) {
+    URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/schema");
+    return (sendGetOrDelete(uri, DELETE).status() == 204) ? true : false;
   }
   
   /* Deeply Internal (Used only by Transport API) */
   private URI buildURL(String base, String path) {
     try {
-      URIBuilder uri_builder = new URIBuilder(base);
-      uri_builder.setPath(path);
-      return uri_builder.build();
+      URI uri = new URI(base + path);
+      return uri;
     }
     catch (URISyntaxException e) {
       // TODO: better error handling
@@ -141,15 +144,15 @@ public class HttpTransport implements Transport {
     }
   }
   
-  private StatusLine sendGetRequest(URI uri) {
+  private Response sendGetRequest(URI uri) {
     return this.sendGetOrDelete(uri, GET);
   }
 
-  private StatusLine sendGetOrDelete(URI uri, Method method) {
+  private Response sendGetOrDelete(URI uri, Method method) {
     return client.sendGetOrDelete(uri, method);
   }
       
-  private StatusLine sendPostOrPut(URI uri, Method method, InputStream input) {
+  private Response sendPostOrPut(URI uri, Method method, InputStream input) {
     return client.sendPostOrPut(uri, method, input);
   }
 }

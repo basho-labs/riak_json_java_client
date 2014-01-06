@@ -10,6 +10,6 @@ import org.apache.http.StatusLine;
  * @author Randy Secrist
  */
 public interface RestClient {
-  StatusLine sendGetOrDelete(URI uri, Method method);
-  StatusLine sendPostOrPut(URI uri, Method method, InputStream input);
+  Response sendGetOrDelete(URI uri, Method method);
+  Response sendPostOrPut(URI uri, Method method, InputStream input);
 }
