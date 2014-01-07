@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.basho.riak.json.jackson.FieldTypeDeserializer;
 import com.basho.riak.json.jackson.FieldTypeSerializer;
+import com.basho.riak.json.jackson.DefaultSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -37,7 +38,9 @@ public class Field {
     return this;
   }
   
-  // TODO: add toString()
+  public String toString() {
+    return new DefaultSerializer().toJsonString(this);
+  }
 
   @JsonSerialize(using = FieldTypeSerializer.class)
   @JsonDeserialize(using = FieldTypeDeserializer.class)
@@ -45,7 +48,8 @@ public class Field {
     INTEGER (1 << 0),
     STRING (1 << 1),
     TEXT (1 << 2),
-    MULTI_STRING (1 << 3);
+    MULTI_STRING (1 << 3),
+    GEO (1 << 4);
     
     private final int code;
     

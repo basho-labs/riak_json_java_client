@@ -1,16 +1,13 @@
 package riak_json_java_client_http
 
 import java.net.URI
-
 import org.scalatest.BeforeAndAfter
 import org.scalatest.FunSpec
 import org.scalatest.MustMatchers
 import org.scalatest.mock.MockitoSugar
+import org.scalatest.prop.PropertyChecks
 import org.mockito.Mockito._
 import org.mockito.Matchers._
-
-import org.apache.http.HttpResponse
-import org.apache.http.StatusLine
 
 import com.basho.riak.json._
 import com.basho.riak.json.transports.http._
@@ -19,7 +16,7 @@ import com.basho.riak.json.transports.http._
  *
  * @author Randy Secrist
  */
-class TransportSpecTest extends FunSpec with MockitoSugar with BeforeAndAfter with MustMatchers {
+class TransportSpecTest extends FunSpec with MockitoSugar with BeforeAndAfter with MustMatchers with PropertyChecks {
   before {}
   after {}
 
@@ -44,8 +41,12 @@ class TransportSpecTest extends FunSpec with MockitoSugar with BeforeAndAfter wi
       assert(transport.pingKV())
     }
 
-    it ("[somefun] does something") {
-      val http_response = mock[HttpResponse]
+    it ("[setSchema] returns true if response code == 204") {
+      when(response.status()).thenReturn(204)
+      when(rest_client.sendPostOrPut(any(classOf[URI]), any(), any())).thenReturn(response)
+      
+      val schema = new Schema.Builder().build();
+      assert(transport.setSchema("some_collection_name", schema))
     }
   }
 } 

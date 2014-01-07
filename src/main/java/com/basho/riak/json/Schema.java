@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.basho.riak.json.jackson.SchemaDeserializer;
 import com.basho.riak.json.jackson.SchemaSerializer;
+import com.basho.riak.json.jackson.DefaultSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -53,6 +54,8 @@ public class Schema {
     return fields;
   }
   
-  // TODO: add toString()
-  
+  public String toString() {
+    return new DefaultSerializer().toJsonString(this);
+  }
+    
 }

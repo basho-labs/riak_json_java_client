@@ -10,9 +10,8 @@ import java.net.URISyntaxException;
 import com.basho.riak.json.Schema;
 import com.basho.riak.json.Transport;
 import com.basho.riak.json.errors.RiakJsonError;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.basho.riak.json.jackson.DefaultSerializer;
+import com.basho.riak.json.jackson.Serialization;
 
 import static com.basho.riak.json.transports.http.Method.GET;
 import static com.basho.riak.json.transports.http.Method.PUT;
@@ -29,6 +28,7 @@ public class HttpTransport implements Transport {
   private String host;
   private int port;
   private RestClient client;
+  private Serialization serializer;
       
   public HttpTransport(String host, int port) {
     super();
@@ -36,6 +36,7 @@ public class HttpTransport implements Transport {
     this.host = host;
     this.port = port;
     setRestClient(new ApacheRestClient());
+    setSerializer(new DefaultSerializer());
   }
   
   public void setProtocol(Protocol protocol) {
@@ -44,6 +45,10 @@ public class HttpTransport implements Transport {
   
   public void setRestClient(RestClient client) {
     this.client = client;
+  }
+  
+  public void setSerializer(Serialization serializer) {
+    this.serializer = serializer;
   }
   
   public String getBaseRiakURL() {
@@ -66,7 +71,6 @@ public class HttpTransport implements Transport {
   // TODO: build document api
   // TODO: build query api
   // use the base urls to do the following:
-  //   setSchema, getSchema
   //   setDocument, getDocument
   //   Query
   
@@ -93,21 +97,8 @@ public class HttpTransport implements Transport {
       return null;
 
     String json = new String(response.body());
-    
-    // deserialize
-    ObjectMapper mapper = new ObjectMapper();
-    
-    Schema rtnval = null;
-    try {
-      rtnval = mapper.readValue(json, Schema.class);
-    }
-    catch (JsonMappingException | JsonParseException e) {
-      // TODO: handle schema read failure modes
-    }
-    catch (IOException e) {
-      // TODO: handle schema read failure modes
-    }
-    return rtnval;
+        
+    return serializer.fromJsonString(json);
   }
   
   public boolean setSchema(String collection_name, Schema schema) {
@@ -115,13 +106,12 @@ public class HttpTransport implements Transport {
     PipedInputStream in = new PipedInputStream(4096);
   
     try (PipedOutputStream out = new PipedOutputStream(in)) {
-      // serialize schema to json
-      ObjectMapper mapper = new ObjectMapper();
-      mapper.writeValue(out, schema);
+      serializer.toOutputStream(schema, out);
     }
-    catch (Throwable t) {
+    catch (IOException e) {
       // TODO: better error handling
-      t.printStackTrace();
+      // throw a runtime exception in case the impossible happens
+      throw new InternalError("Unexpected IOException: " + e.getMessage());
     }
   
     return (sendPostOrPut(uri, PUT, in).status() == 204) ? true : false;
@@ -140,7 +130,7 @@ public class HttpTransport implements Transport {
     }
     catch (URISyntaxException e) {
       // TODO: better error handling
-      throw new RiakJsonError("Invalid Configuration", e);
+      throw new RiakJsonError("Invalid Application Configuration", e);
     }
   }
   
