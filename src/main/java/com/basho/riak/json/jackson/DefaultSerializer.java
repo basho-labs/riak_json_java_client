@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.basho.riak.json.Field;
 import com.basho.riak.json.Schema;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,8 +21,8 @@ public class DefaultSerializer implements Serialization {
   // http://wiki.fasterxml.com/JacksonFAQThreadSafety
   private static final ObjectMapper mapper = new ObjectMapper();
     
-  public String toJsonString(Object object) {
-      String rtnval = null;
+  public String toJsonString(JsonSerializable object) {
+    String rtnval = null;
     try {
       rtnval = mapper.writeValueAsString(object);
     }

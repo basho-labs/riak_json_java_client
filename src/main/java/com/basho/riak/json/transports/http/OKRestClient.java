@@ -25,6 +25,7 @@ public class OKRestClient extends AbstractRestClient {
       connection.setRequestMethod(method.toString().toUpperCase());
     }
     catch (MalformedURLException | ProtocolException e) {
+      // TODO:  isolate failure modes; improve
       e.printStackTrace();
     }
     
@@ -42,6 +43,7 @@ public class OKRestClient extends AbstractRestClient {
       connection.setRequestProperty("content-type", "application/json");
     }
     catch (MalformedURLException | ProtocolException e) {
+      // TODO:  isolate failure modes; improve
       e.printStackTrace();
     }
     
@@ -51,6 +53,7 @@ public class OKRestClient extends AbstractRestClient {
       out.close();
     }
     catch (IOException e) {
+      // TODO:  isolate failure modes; improve
       e.printStackTrace();
     }
         
@@ -67,9 +70,12 @@ public class OKRestClient extends AbstractRestClient {
       body = out.toByteArray();
     }
     catch (ConnectException | FileNotFoundException e) {
+      // TODO:  passing actual response codes seem impossible
+      // 204 'might' not be the right one in some circumstances
       return new Response(204, null);
     }
     catch (IOException e) {
+      // TODO:  isolate failure modes; improve
       e.printStackTrace();
     }
     return new Response(status, body);

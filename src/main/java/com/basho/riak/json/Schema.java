@@ -3,6 +3,7 @@ package com.basho.riak.json;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.basho.riak.json.jackson.JsonSerializable;
 import com.basho.riak.json.jackson.SchemaDeserializer;
 import com.basho.riak.json.jackson.SchemaSerializer;
 import com.basho.riak.json.jackson.DefaultSerializer;
@@ -11,7 +12,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @JsonSerialize(using = SchemaSerializer.class)
 @JsonDeserialize(using = SchemaDeserializer.class)
-public class Schema {
+public class Schema implements JsonSerializable {
 
   private List<Field> fields;
 

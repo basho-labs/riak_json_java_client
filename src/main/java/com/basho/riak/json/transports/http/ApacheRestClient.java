@@ -80,11 +80,13 @@ public class ApacheRestClient extends AbstractRestClient {
       response = client.execute(uri_request);
     }
     catch (HttpHostConnectException e) {
-      // TOOD: better exception handling for when riak is down
+      // TODO: better exception handling for when riak is down
       e.printStackTrace();
     }
-    catch (Throwable t) {
-      t.printStackTrace();
+    catch (IOException e) {
+      // TODO: handle general, unexpected failures
+      // IOException, ClientProtocolException
+      e.printStackTrace();
     }
     return response;
   }
@@ -105,6 +107,7 @@ public class ApacheRestClient extends AbstractRestClient {
       return new Response(status, e.getMessage().getBytes());
     }
     catch (NullPointerException e) {
+      // no entity; result of a 204; nothing to read back
       return new Response(status, null);
     }
   }

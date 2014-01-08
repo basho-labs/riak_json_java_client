@@ -7,7 +7,7 @@ import com.basho.riak.json.Schema;
 
 public interface Serialization {
   
-  String toJsonString(Object object);
+  String toJsonString(JsonSerializable object);
   void toOutputStream(Schema schema, OutputStream stream);
   Schema fromJsonString(String schema_as_json);
   Schema fromInputStream(InputStream schema_stream);

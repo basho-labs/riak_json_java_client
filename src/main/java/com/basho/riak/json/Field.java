@@ -6,10 +6,11 @@ import java.util.Map;
 import com.basho.riak.json.jackson.FieldTypeDeserializer;
 import com.basho.riak.json.jackson.FieldTypeSerializer;
 import com.basho.riak.json.jackson.DefaultSerializer;
+import com.basho.riak.json.jackson.JsonSerializable;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-public class Field {
+public class Field implements JsonSerializable {
   // Required Attributes
   private String name;
   private Type type;
