@@ -4,15 +4,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.basho.riak.json.Field;
 import com.basho.riak.json.Schema;
+import com.basho.riak.json.errors.RJSerializationError;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
+import static com.basho.riak.json.utils.StreamUtils.rewindStream;
 
 /**
- * Implements the serialization concerns.
+ * Implements the serialization concern.
  * 
  * @author Randy Secrist
  */
@@ -22,14 +25,14 @@ public class DefaultSerializer implements Serialization {
   private static final ObjectMapper mapper = new ObjectMapper();
     
   public String toJsonString(JsonSerializable object) {
+    if (object == null)
+      return null;
     String rtnval = null;
     try {
       rtnval = mapper.writeValueAsString(object);
     }
     catch (JsonProcessingException e) {
-        // TODO: better error handling
-        // throw a runtime exception in case the impossible happens
-        throw new InternalError("Unexpected JsonProcessingException: " + e.getMessage());
+      throw unexpectedWriteFailure(object, e);
     }
     return rtnval;
   }
@@ -38,12 +41,9 @@ public class DefaultSerializer implements Serialization {
     try {
       mapper.writeValue(stream, schema);
     }
-    catch (JsonProcessingException e) {
-        // TODO: handle schema serialization (write) failure modes
+    catch (IOException e) {
+      throw unexpectedIOFailure(e);
     }
-      catch (IOException e) {
-        // TODO: handle schema serialization (read) failure modes
-      }
   }
   
   public Schema fromJsonString(String json) {
@@ -52,10 +52,10 @@ public class DefaultSerializer implements Serialization {
         rtnval = mapper.readValue(json, Schema.class);
       }
       catch (JsonMappingException | JsonParseException e) {
-        // TODO: handle schema serialization (read) failure modes
+        throw unexpectedReadFailure(json.getBytes(), e);
       }
       catch (IOException e) {
-        // TODO: handle schema serialization (read) failure modes
+    	throw unexpectedIOFailure(e);
       }
       return rtnval;
   }
@@ -66,12 +66,28 @@ public class DefaultSerializer implements Serialization {
         rtnval = mapper.readValue(stream, Schema.class);
       }
       catch (JsonMappingException | JsonParseException e) {
-        // TODO: handle schema read failure modes
+        throw unexpectedReadFailure(rewindStream(stream), e);
       }
       catch (IOException e) {
-        // TODO: handle schema read failure modes
+        throw unexpectedReadFailure(rewindStream(stream), e);
       }
       return rtnval;
   }
+  
+  private RJSerializationError unexpectedIOFailure(IOException ioe) {
+    return new RJSerializationError(
+      "Unexpected failure:" + " [ " + ioe.getClass().getSimpleName() + " ], " + ioe.getLocalizedMessage(), ioe);
+  }
+   
+  private RJSerializationError unexpectedWriteFailure(JsonSerializable type, Throwable cause) {
+    return new RJSerializationError(
+      "Unexpected serialization type:" + " [ " + type.getClass() + " ] ", cause);
+  }
 
+  private RJSerializationError unexpectedReadFailure(byte[] serialized_data, Throwable cause) {
+    return new RJSerializationError(
+      serialized_data,
+      "Unexpected deserialization failure:\n" + new String(serialized_data) + "\n",
+      cause);
+  }
 }

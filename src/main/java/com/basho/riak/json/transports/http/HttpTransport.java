@@ -9,7 +9,7 @@ import java.net.URISyntaxException;
 
 import com.basho.riak.json.Schema;
 import com.basho.riak.json.Transport;
-import com.basho.riak.json.errors.RiakJsonError;
+import com.basho.riak.json.errors.RJException;
 import com.basho.riak.json.jackson.DefaultSerializer;
 import com.basho.riak.json.jackson.Serialization;
 
@@ -130,7 +130,7 @@ public class HttpTransport implements Transport {
     }
     catch (URISyntaxException e) {
       // TODO: better error handling
-      throw new RiakJsonError("Invalid Application Configuration", e);
+      throw new RJException("Invalid Application Configuration", e);
     }
   }
   

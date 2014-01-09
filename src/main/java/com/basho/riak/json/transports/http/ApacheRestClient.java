@@ -24,6 +24,7 @@ import static com.basho.riak.json.transports.http.Method.GET;
 import static com.basho.riak.json.transports.http.Method.DELETE;
 import static com.basho.riak.json.transports.http.Method.POST;
 import static com.basho.riak.json.transports.http.Method.PUT;
+import static com.basho.riak.json.utils.StreamUtils.copyInputStream;
 
 /**
  *

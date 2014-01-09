@@ -1,6 +1,7 @@
 package riak_json_java_client_http
 
 import java.net.URI
+
 import org.scalatest.BeforeAndAfter
 import org.scalatest.FunSpec
 import org.scalatest.MustMatchers

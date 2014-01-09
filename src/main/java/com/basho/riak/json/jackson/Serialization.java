@@ -5,6 +5,15 @@ import java.io.OutputStream;
 
 import com.basho.riak.json.Schema;
 
+/**
+ * Expresses the seralization concern of the Riak Json
+ * client library.
+ * 
+ * Attempts to be as type-explicit as possible to reduce
+ * the possibility of {@link RJSerializationErrors}.
+ * 
+ * @author Randy Secrist
+ */
 public interface Serialization {
   
   String toJsonString(JsonSerializable object);
