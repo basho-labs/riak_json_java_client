@@ -16,17 +16,12 @@ import com.basho.riak.json.jackson._
 
 class SerializationSpecTest extends FunSpec with Matchers with PropertyChecks {
 
-  class DummyPerson (firstname:String,lastname:String) extends JsonSerializable {
-    var fname = firstname;
-    var lname = lastname;
-  }
-
   describe ("serialization spec tests") {
     val serializer = new DefaultSerializer()
     val field = new Field("background", TEXT)
     val schema = new Schema.Builder()
       .addField(new Field("first_name", STRING))
-      .addField(new Field("last_name", STRING))
+      .addField(new Field("last_name", STRING).setRequired(true))
       .addField(field)
       .build()
       
@@ -34,10 +29,10 @@ class SerializationSpecTest extends FunSpec with Matchers with PropertyChecks {
       assert(serializer.toJsonString(null) == null)
     }
     
-    it ("[toJsonString] writes any JsonSerializable object as a String") {
+    it ("[toJsonString] writes supported JsonSerializable objects as a String") {
       assertResult("[" + 
         "{\"name\":\"first_name\",\"type\":\"string\",\"required\":false}," +
-        "{\"name\":\"last_name\",\"type\":\"string\",\"required\":false}," +
+        "{\"name\":\"last_name\",\"type\":\"string\",\"required\":true}," +
         "{\"name\":\"background\",\"type\":\"text\",\"required\":false}" + 
       "]") {
         serializer.toJsonString(schema)
@@ -57,14 +52,13 @@ class SerializationSpecTest extends FunSpec with Matchers with PropertyChecks {
     }
     
     it ("[toJsonString] should explode when using unsupported types") {
-      val person = new DummyPerson("Walter", "White")
-      intercept[RJSerializationError] {
-        serializer.toJsonString(person)
+      class Person (firstname:String,lastname:String) extends JsonSerializable {
+        var fname = firstname; var lname = lastname;
       }
       val invalidTypes =
         Table(
           ("t"),
-          (person)
+          (new Person("Walter", "White"))
         )    
       forAll (invalidTypes) { (t: JsonSerializable) =>
         evaluating {
