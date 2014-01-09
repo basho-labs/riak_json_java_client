@@ -8,10 +8,12 @@ import org.scalatest.mock.MockitoSugar
 import org.scalatest.prop.PropertyChecks
 import org.mockito.Mockito._
 import org.mockito.Matchers._
+
 import com.basho.riak.json._
 import com.basho.riak.json.errors._
 import com.basho.riak.json.Field.Type._
 import com.basho.riak.json.jackson._
+
 import java.io.ByteArrayOutputStream
 import java.io.ByteArrayInputStream
 
