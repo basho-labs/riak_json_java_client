@@ -10,6 +10,7 @@ import java.net.URISyntaxException;
 import com.basho.riak.json.Schema;
 import com.basho.riak.json.Transport;
 import com.basho.riak.json.errors.RJException;
+import com.basho.riak.json.errors.RJTransportError;
 import com.basho.riak.json.jackson.DefaultSerializer;
 import com.basho.riak.json.jackson.Serialization;
 
@@ -105,13 +106,11 @@ public class HttpTransport implements Transport {
 	URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/schema");
     PipedInputStream in = new PipedInputStream(4096);
   
-    try (PipedOutputStream out = new PipedOutputStream(in)) {
-      serializer.toOutputStream(schema, out);
+    try (PipedOutputStream stream = new PipedOutputStream(in)) {
+      serializer.toOutputStream(schema, stream);
     }
     catch (IOException e) {
-      // TODO: better error handling
-      // throw a runtime exception in case the impossible happens
-      throw new InternalError("Unexpected IOException: " + e.getMessage());
+      throw new RJTransportError("Unexpected IOException while setting up response pipe.", e);
     }
   
     return (sendPostOrPut(uri, PUT, in).status() == 204) ? true : false;
@@ -129,8 +128,7 @@ public class HttpTransport implements Transport {
       return uri;
     }
     catch (URISyntaxException e) {
-      // TODO: better error handling
-      throw new RJException("Invalid Application Configuration", e);
+      throw new RJTransportError("Invalid Riak URI", e);
     }
   }
   

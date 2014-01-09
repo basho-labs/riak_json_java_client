@@ -20,6 +20,8 @@ import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 
+import com.basho.riak.json.errors.RJTransportError;
+
 import static com.basho.riak.json.transports.http.Method.GET;
 import static com.basho.riak.json.transports.http.Method.DELETE;
 import static com.basho.riak.json.transports.http.Method.POST;
@@ -81,13 +83,10 @@ public class ApacheRestClient extends AbstractRestClient {
       response = client.execute(uri_request);
     }
     catch (HttpHostConnectException e) {
-      // TODO: better exception handling for when riak is down
-      e.printStackTrace();
+      throw new RJTransportError("Failed Request", e);
     }
     catch (IOException e) {
-      // TODO: handle general, unexpected failures
-      // IOException, ClientProtocolException
-      e.printStackTrace();
+      throw new RJTransportError("Failed Request", e);
     }
     return response;
   }
@@ -98,18 +97,17 @@ public class ApacheRestClient extends AbstractRestClient {
 
     int status = response.getStatusLine().getStatusCode();
     HttpEntity entity = response.getEntity();
-    try {
-      InputStream in = entity.getContent();
+    
+    if (entity == null) // usually b/c of a 204
+    	return new Response(status, null);
+    
+    try (InputStream in = entity.getContent()) {
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       copyInputStream(in, out);
       return new Response(status, out.toByteArray());
     }
     catch (IOException e) {
-      return new Response(status, e.getMessage().getBytes());
-    }
-    catch (NullPointerException e) {
-      // no entity; result of a 204; nothing to read back
-      return new Response(status, null);
+      throw new RJTransportError("Failed Request", e);
     }
   }
   
