@@ -81,7 +81,7 @@ public class DefaultSerializer implements Serialization {
    
   private RJSerializationError unexpectedWriteFailure(JsonSerializable type, Throwable cause) {
     return new RJSerializationError(
-      "Unexpected serialization type:" + " [ " + type.getClass() + " ] ", cause);
+      "Unexpected serialization type:" + " [ " + type.getClass().getSimpleName() + " ] ", cause);
   }
 
   private RJSerializationError unexpectedReadFailure(byte[] serialized_data, Throwable cause) {
