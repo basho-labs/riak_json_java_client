@@ -37,11 +37,16 @@ class SerializationSpecTest extends FunSpec with Matchers with PropertyChecks {
       "]") {
         serializer.toJsonString(schema)
       }
+      class ValidPerson (first_name:String) extends JsonSerializable {
+        private var _fname = first_name
+        def getFirstName = _fname
+      }
       val validTypes =
         Table(
           ("t"),
           (schema),
-          (field)
+          (field),
+          (new ValidPerson("Walter"))
         )
       forAll (validTypes) { (t: JsonSerializable) =>
         whenever (t != null) {
@@ -51,17 +56,15 @@ class SerializationSpecTest extends FunSpec with Matchers with PropertyChecks {
       }
     }
     
-    it ("[toJsonString] should explode when using unsupported types") {
-      class Person (first_name:String, last_name:String) extends JsonSerializable {
+    it ("[toJsonString] should explode when using types w/o getters") {
+      class InvalidPerson (first_name:String, last_name:String) extends JsonSerializable {
         private var _fname = first_name; private var _lname = last_name
         def firstname = _fname; def lastname = _lname
       }
-      // not sure why a scala 'Person' (with a getter)
-      // is any less than a java 'Person' (with a getter)
       val invalidTypes =
         Table(
           ("t"),
-          (new Person("Walter", "White"))
+          (new InvalidPerson("Walter", "White"))
         )    
       forAll (invalidTypes) { (t: JsonSerializable) =>
         evaluating {
