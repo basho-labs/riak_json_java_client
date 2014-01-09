@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 import static com.basho.riak.json.utils.StreamUtils.rewindStream;
 
@@ -51,7 +50,7 @@ public class DefaultSerializer implements Serialization {
       try {
         rtnval = mapper.readValue(json, Schema.class);
       }
-      catch (JsonMappingException | JsonParseException e) {
+      catch (JsonMappingException | JsonParseException | RuntimeException e) {
         throw unexpectedReadFailure(json.getBytes(), e);
       }
       catch (IOException e) {
@@ -65,7 +64,7 @@ public class DefaultSerializer implements Serialization {
       try {
         rtnval = mapper.readValue(stream, Schema.class);
       }
-      catch (JsonMappingException | JsonParseException e) {
+      catch (JsonMappingException | JsonParseException | RuntimeException e) {
         throw unexpectedReadFailure(rewindStream(stream), e);
       }
       catch (IOException e) {
@@ -85,9 +84,20 @@ public class DefaultSerializer implements Serialization {
   }
 
   private RJSerializationError unexpectedReadFailure(byte[] serialized_data, Throwable cause) {
-    return new RJSerializationError(
-      serialized_data,
-      "Unexpected deserialization failure:\n" + new String(serialized_data) + "\n",
-      cause);
+	String message = getErrorTemplate(serialized_data, "Unexpected deserialization failure", cause);
+    return new RJSerializationError(serialized_data, message, cause);
+  }
+  
+  private String getErrorTemplate(byte[] serialized_data, String message, Throwable cause) {
+    String separator = System.getProperty("line.separator");
+    StringBuilder builder = new StringBuilder();
+    builder.append(separator + "---- Debugging information ----" + separator);
+    builder.append("message             : " + message + separator);
+    builder.append("cause-exception     : " + cause.getClass().getName() + separator);
+    builder.append("cause-message       : " + cause.getLocalizedMessage() + separator);
+    builder.append("DATA                : " + separator);
+    builder.append(new String(serialized_data) + separator);
+    builder.append("-------------------------------");
+    return builder.toString();
   }
 }
