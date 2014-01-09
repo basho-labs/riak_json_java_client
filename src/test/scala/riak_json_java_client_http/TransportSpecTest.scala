@@ -11,6 +11,7 @@ import org.mockito.Mockito._
 import org.mockito.Matchers._
 
 import com.basho.riak.json._
+import com.basho.riak.json.errors._
 import com.basho.riak.json.transports.http._
 
 /**
@@ -40,6 +41,12 @@ class TransportSpecTest extends FunSpec with MockitoSugar with BeforeAndAfter wi
 
       transport.setRestClient(rest_client)
       assert(transport.pingKV())
+    }
+    
+    it ("[pingRJ] throws an exception until implemented") {
+      intercept[RJTransportError] {
+        transport.pingRJ()
+      }
     }
 
     it ("[setSchema] returns true if response code == 204") {
