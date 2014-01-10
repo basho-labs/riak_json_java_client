@@ -29,7 +29,6 @@ class DocumentSpecTest extends FunSpec with MockitoSugar with Matchers {
     it ("may not have a key") {
       assert(document.getKey == null)
     }
-
   }
   
 }

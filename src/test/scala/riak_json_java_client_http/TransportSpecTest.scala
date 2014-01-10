@@ -1,16 +1,17 @@
 package riak_json_java_client_http
 
 import java.net.URI
+import scala.beans.BeanProperty
 
 import org.scalatest.BeforeAndAfter
 import org.scalatest.FunSpec
-import org.scalatest.MustMatchers
+import org.scalatest.Matchers
 import org.scalatest.mock.MockitoSugar
-import org.scalatest.prop.PropertyChecks
 import org.mockito.Mockito._
 import org.mockito.Matchers._
 
 import com.basho.riak.json._
+import com.basho.riak.json.Field.Type._
 import com.basho.riak.json.errors._
 import com.basho.riak.json.transports.http._
 
@@ -18,18 +19,22 @@ import com.basho.riak.json.transports.http._
  *
  * @author Randy Secrist
  */
-class TransportSpecTest extends FunSpec with MockitoSugar with BeforeAndAfter with MustMatchers with PropertyChecks {
-  before {}
-  after {}
+class TransportSpecTest extends FunSpec with MockitoSugar with Matchers with BeforeAndAfter {
 
   describe ("http transport spec tests") {
     val transport = new HttpTransport("somehost", 9876);
     val response = mock[Response]
     val rest_client = mock[RestClient]
+    val collection_name = "some_collection_name"
+    
+    when(rest_client.sendGetOrDelete(any(classOf[URI]), any())).thenReturn(response)
+    when(rest_client.sendPostOrPut(any(classOf[URI]), any(), any())).thenReturn(response)
 
+    before {}
+    after { reset(response) }
+    
     it ("[ping] returns true if response code == 200") {
       when(response.status()).thenReturn(200)
-      when(rest_client.sendGetOrDelete(any(classOf[URI]), any())).thenReturn(response)
 
       transport.setRestClient(rest_client)
       assert(transport.ping())
@@ -37,8 +42,7 @@ class TransportSpecTest extends FunSpec with MockitoSugar with BeforeAndAfter wi
 
     it ("[pingKV] returns true if response code == 404") {
       when(response.status()).thenReturn(404)
-      when(rest_client.sendGetOrDelete(any(classOf[URI]), any())).thenReturn(response)
-
+  
       transport.setRestClient(rest_client)
       assert(transport.pingKV())
     }
@@ -48,20 +52,73 @@ class TransportSpecTest extends FunSpec with MockitoSugar with BeforeAndAfter wi
         transport.pingRJ()
       }
     }
+    
+    describe ("transport schema tests") {
+      val schema = new Schema.Builder().addField(new Field("first_name", STRING)).build();
 
-    it ("[setSchema] returns true if response code == 204") {
-      when(response.status()).thenReturn(204)
-      when(rest_client.sendPostOrPut(any(classOf[URI]), any(), any())).thenReturn(response)
-      
-      val schema = new Schema.Builder().build();
-      assert(transport.setSchema("some_collection_name", schema))
+      it ("[setSchema] returns true only if response code == 204") {
+        when(response.status()).thenReturn(204)
+        transport.setSchema(collection_name, schema) should be === true
+
+        when(response.status()).thenReturn(404)
+        transport.setSchema(collection_name, schema) should be === false
+      }
+    
+      it ("[getSchema] returns a schema if response code == 200") {
+        when(response.status()).thenReturn(200);
+        when(response.body()).thenReturn(schema.toString().getBytes());
+        
+        val field = transport.getSchema(collection_name).getFields().get(0)
+        field.getName() should be === "first_name"
+        field.getType() should be === STRING
+      }
+    
+      it ("[deleteSchema] returns true only if response code == 204") {
+        when(response.status()).thenReturn(204)
+        transport.deleteSchema(collection_name) should be === true
+
+        when(response.status()).thenReturn(404)
+        transport.deleteSchema(collection_name) should be === false
+      }
+    
     }
+    
+    describe ("transport document tests") {
+      class MyLine (length:Int) extends Document {
+        @BeanProperty var key: String = _
+        private var _length = length
+        def getLength = _length
+      }
+      val test_key = "my_key"
+        
+      it ("[insertDocument] returns the supplied key if response code == 204") {
+        val document = new MyLine(19)
+        document.setKey(test_key)
+
+        when(response.status()).thenReturn(204);
+
+        val result = transport.insertDocument(collection_name, document)
+        result should be === test_key
+      }
+
+      it ("[insertDocument] returns the response body if response code != 204") {
+        val expected_body = "some response body"
+        val document = new MyLine(19)
+        document.setKey(test_key)
+
+        when(response.status()).thenReturn(200);
+        when(response.body()).thenReturn(expected_body.getBytes());
+
+        val result = transport.insertDocument(collection_name, document)
+        result should be === expected_body
+      }
+      
+    }
+
   }
 } 
 
-class TransportConfigTest extends FunSpec with BeforeAndAfter {
-  before {}
-  after {}
+class TransportConfigTest extends FunSpec {
 
   describe ("http transport config") {
     val transport = new HttpTransport("somehost", 9876);
