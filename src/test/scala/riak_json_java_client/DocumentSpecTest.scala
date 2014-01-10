@@ -16,30 +16,18 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 class DocumentSpecTest extends FunSpec with MockitoSugar with Matchers {
   
-  class MySquare (length:Int, width:Int) extends Document {
-    // use @JsonIgnore as well if omitted key from
-    // serialized json is desired
+  class MyLine (length:Int) extends Document {
     @BeanProperty var key: String = _
-    
     private var _length = length
-    private var _width = width
-
-    def getLength = _length
-    def getWidth = _width
-    
-    /* don't serialize this tuple */
-    @JsonIgnore def getSize = Tuple2(_length, _width)
+    def getLength = _length    
   }
 
   describe ("document specification tests") {
     val serializer = new DefaultSerializer()
-    val document = new MySquare(640, 480)
+    val document = new MyLine(320)
 
-    it ("should not have a key") {
+    it ("may not have a key") {
       assert(document.getKey == null)
-            
-      val json = serializer.toJsonString(document)
-      json.length() should be > 0
     }
 
   }

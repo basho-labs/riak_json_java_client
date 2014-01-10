@@ -1,5 +1,7 @@
 package riak_json_java_client_serialization
 
+import scala.beans.BeanProperty
+
 import org.scalatest.BeforeAndAfter
 import org.scalatest.FunSpec
 import org.scalatest.Matchers
@@ -13,11 +15,36 @@ import com.basho.riak.json._
 import com.basho.riak.json.errors._
 import com.basho.riak.json.Field.Type._
 import com.basho.riak.json.jackson._
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.io.ByteArrayOutputStream
 import java.io.ByteArrayInputStream
 
 class SerializationSpecTest extends FunSpec with Matchers with PropertyChecks {
+  class ValidPerson (first_name:String) extends JsonSerializable {
+    private var _fname = first_name
+    def getFirstName = _fname
+  }
+
+  class InvalidPerson (first_name:String, last_name:String) extends JsonSerializable {
+    private var _fname = first_name; private var _lname = last_name
+    def firstname = _fname; def lastname = _lname
+  }
+
+  class MySquare (length:Int, width:Int) extends Document {
+    // use @JsonIgnore as well if omitted key from
+    // serialized json is desired
+    @BeanProperty var key: String = _
+    
+    private var _length = length
+    private var _width = width
+
+    def getLength = _length
+    def getWidth = _width
+    
+    /* don't serialize this tuple */
+    @JsonIgnore def getSize = Tuple2(_length, _width)
+  }
 
   describe ("serialization spec tests") {
     val serializer = new DefaultSerializer()
@@ -27,6 +54,7 @@ class SerializationSpecTest extends FunSpec with Matchers with PropertyChecks {
       .addField(new Field("last_name", STRING).setRequired(true))
       .addField(field)
       .build()
+    val document = new MySquare(1024, 768)
             
     it ("[toJsonString] returns null if passed null") {
       assert(serializer.toJsonString(null) == null)
@@ -49,13 +77,10 @@ class SerializationSpecTest extends FunSpec with Matchers with PropertyChecks {
     }
 
     it ("[toJsonString] writes compatible JsonSerializable objects as a String") {
-      class ValidPerson (first_name:String) extends JsonSerializable {
-        private var _fname = first_name
-        def getFirstName = _fname
-      }
       val validTypes =
         Table(
           ("t"),
+          (document),
           (schema),
           (field),
           (new ValidPerson("Walter"))
@@ -69,10 +94,6 @@ class SerializationSpecTest extends FunSpec with Matchers with PropertyChecks {
     }
     
     it ("[toJsonString] should explode when using types w/o getters") {
-      class InvalidPerson (first_name:String, last_name:String) extends JsonSerializable {
-        private var _fname = first_name; private var _lname = last_name
-        def firstname = _fname; def lastname = _lname
-      }
       val invalidTypes =
         Table(
           ("t"),
@@ -102,7 +123,7 @@ class SerializationSpecTest extends FunSpec with Matchers with PropertyChecks {
       }
     }
     
-    it ("[fromJsonString] explodes if it gets a random json String") {
+    it ("[fromJsonString] explodes if it gets a unmappable json String") {
       val random_json = "{\"foo\":\"bar\"}"
       intercept[RJSerializationError] {
         serializer.fromJsonString(random_json);
