@@ -42,7 +42,9 @@ public class Collection {
    * @param document
    * @return The key of the inserted document.
    */
-  public String insert(Document document) { return null; }
+  public String insert(Document document) {
+    return transport.insertDocument(name, document);
+  }
   
   /**
    * Inserts a JSON document into the collection using the specified Riak key.
