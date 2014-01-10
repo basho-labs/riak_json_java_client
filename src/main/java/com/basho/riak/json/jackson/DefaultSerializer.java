@@ -36,9 +36,9 @@ public class DefaultSerializer implements Serialization {
     return rtnval;
   }
   
-  public void toOutputStream(Schema schema, OutputStream stream) {
+  public void toOutputStream(JsonSerializable json, OutputStream stream) {
     try {
-      mapper.writeValue(stream, schema);
+      mapper.writeValue(stream, json);
     }
     catch (IOException e) {
       throw unexpectedIOFailure(e);

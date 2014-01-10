@@ -15,10 +15,11 @@ import com.basho.riak.json.Schema;
  * @author Randy Secrist
  */
 public interface Serialization {
-  
+  // writers
   String toJsonString(JsonSerializable object);
-  void toOutputStream(Schema schema, OutputStream stream);
+  void toOutputStream(JsonSerializable json, OutputStream stream);
+    
+  // readers
   Schema fromJsonString(String schema_as_json);
   Schema fromInputStream(InputStream schema_stream);
-
 }

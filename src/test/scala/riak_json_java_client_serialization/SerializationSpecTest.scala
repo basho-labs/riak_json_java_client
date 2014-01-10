@@ -27,7 +27,7 @@ class SerializationSpecTest extends FunSpec with Matchers with PropertyChecks {
       .addField(new Field("last_name", STRING).setRequired(true))
       .addField(field)
       .build()
-      
+            
     it ("[toJsonString] returns null if passed null") {
       assert(serializer.toJsonString(null) == null)
     }

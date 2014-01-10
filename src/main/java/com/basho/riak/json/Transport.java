@@ -55,5 +55,5 @@ public interface Transport {
    * Insert a document into Riak.
    * @return The key of the document.
    */
-  String insertDocument(Document document);
+  String insertDocument(String collection_name, Document document);
 }

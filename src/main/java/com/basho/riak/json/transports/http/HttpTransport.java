@@ -12,6 +12,7 @@ import com.basho.riak.json.Schema;
 import com.basho.riak.json.Transport;
 import com.basho.riak.json.errors.RJTransportError;
 import com.basho.riak.json.jackson.DefaultSerializer;
+import com.basho.riak.json.jackson.JsonSerializable;
 import com.basho.riak.json.jackson.Serialization;
 
 import static com.basho.riak.json.transports.http.Method.GET;
@@ -69,7 +70,6 @@ public class HttpTransport implements Transport {
   }
 
   /* Transport API (Move to Interface) */
-  // TODO: build document api
   // TODO: build query api
   // use the base urls to do the following:
   //   setDocument, getDocument
@@ -103,16 +103,8 @@ public class HttpTransport implements Transport {
   }
   
   public boolean setSchema(String collection_name, Schema schema) {
-	URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/schema");
-    PipedInputStream in = new PipedInputStream(4096);
-  
-    try (PipedOutputStream stream = new PipedOutputStream(in)) {
-      serializer.toOutputStream(schema, stream);
-    }
-    catch (IOException e) {
-      throw new RJTransportError("Unexpected IOException while setting up response pipe.", e);
-    }
-  
+    URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/schema");
+    InputStream in = this.fillInputPipe(schema);
     return (sendPostOrPut(uri, PUT, in).status() == 204) ? true : false;
   }
   
@@ -143,8 +135,24 @@ public class HttpTransport implements Transport {
   private Response sendPostOrPut(URI uri, Method method, InputStream input) {
     return client.sendPostOrPut(uri, method, input);
   }
+  
+  private InputStream fillInputPipe(JsonSerializable json) {
+    PipedInputStream in = new PipedInputStream(4096);
+    
+    try (PipedOutputStream stream = new PipedOutputStream(in)) {
+      serializer.toOutputStream(json, stream);
+    }
+    catch (IOException e) {
+      throw new RJTransportError("Unexpected IOException while setting up response pipe.", e);
+    }
+    return in;
+  }
 
-  public String insertDocument(Document document) {
-    return null;
+  public String insertDocument(String collection_name, Document document) {
+    String key = document.getKey();
+    URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/" + key);
+    InputStream in = this.fillInputPipe(document);
+    Response response = sendPostOrPut(uri, PUT, in);
+    return (response.status() == 204) ? key : new String(response.body());
   }
 }
