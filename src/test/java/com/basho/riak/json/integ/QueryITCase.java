@@ -10,6 +10,7 @@ import com.basho.riak.json.Document;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class QueryITCase {
 
@@ -21,12 +22,14 @@ public class QueryITCase {
     public void setFirstname(String firstname) { this.firstname = firstname; }
   }
 
+  private MyDocument document;
   private Collection collection;
 
   @Before
   public void before() {
     Client client = new Client("localhost", 10018);
     collection = client.createCollection("test_collection");
+    document = new MyDocument();
   }
 
   @After
@@ -35,29 +38,28 @@ public class QueryITCase {
 
   @Test
   public void insertWithKey() {
-    MyDocument doc = new MyDocument();
-    doc.setKey("123");
-    doc.setFirstname("Walter");
-    String resulting_key = collection.insert(doc);
+	document.setKey("123");
+	document.setFirstname("Walter");
+    String resulting_key = collection.insert(document);
     assertEquals("123", resulting_key);
   }
 
   @Test
   public void insertWithNoKey() {
-    MyDocument doc = new MyDocument();
-    doc.setFirstname("Walter");
-    String resulting_key = collection.insert(doc);
-    assert(resulting_key != null);
+	document.setFirstname("Walter");
+    String resulting_key = collection.insert(document);
+    assertTrue(resulting_key != null);
   }
 
   @Test
   public void updateExisting() {
-    // updates an existing document
+	document.setKey("123");
+    document.setFirstname("White");
+    assertTrue(collection.update(document));
   }
 
   @Test
   public void queryByKey() {
-    // reads an existing document (loads it by key)
   }
 
   @Test
