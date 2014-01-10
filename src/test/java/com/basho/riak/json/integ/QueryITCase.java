@@ -14,11 +14,11 @@ import static org.junit.Assert.assertEquals;
 public class QueryITCase {
 
   class MyDocument implements Document {
-  private String key, firstname;
-  @JsonIgnore public String getKey() { return this.key; }
-  public void setKey(String key) { this.key = key; }
-  public String getFirstname() { return this.firstname; }
-  public void setFirstname(String firstname) { this.firstname = firstname; }
+    private String key, firstname;
+    @JsonIgnore public String getKey() { return this.key; }
+    public void setKey(String key) { this.key = key; }
+    public String getFirstname() { return this.firstname; }
+    public void setFirstname(String firstname) { this.firstname = firstname; }
   }
 
   private Collection collection;
@@ -35,17 +35,17 @@ public class QueryITCase {
 
   @Test
   public void insertWithKey() {
-  MyDocument doc = new MyDocument();
-  doc.setKey("123");
-  doc.setFirstname("Walter");
+    MyDocument doc = new MyDocument();
+    doc.setKey("123");
+    doc.setFirstname("Walter");
     String resulting_key = collection.insert(doc);
     assertEquals("123", resulting_key);
   }
 
   @Test
   public void insertWithNoKey() {
-  MyDocument doc = new MyDocument();
-  doc.setFirstname("Walter");
+    MyDocument doc = new MyDocument();
+    doc.setFirstname("Walter");
     String resulting_key = collection.insert(doc);
     assert(resulting_key != null);
   }
