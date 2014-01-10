@@ -56,4 +56,6 @@ public interface Transport {
    * @return The key of the document.
    */
   String insertDocument(String collection_name, Document document);
+  
+  boolean removeDocument(String collection_name, Document document);
 }

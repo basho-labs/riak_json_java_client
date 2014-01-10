@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolVersion;
@@ -21,6 +22,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import com.basho.riak.json.errors.RJTransportError;
+import com.google.common.collect.ImmutableMap;
 
 import static com.basho.riak.json.transports.http.Method.GET;
 import static com.basho.riak.json.transports.http.Method.DELETE;
@@ -93,18 +95,23 @@ public class ApacheRestClient extends AbstractRestClient {
   
   private Response getResult(HttpResponse response, final ProtocolVersion pv) {
     if (response == null)
-      return new Response(404, null);
+      return new Response(404, null, null);
+    
+    ImmutableMap.Builder<String,String> headers = ImmutableMap.builder();
+    for (Header h : response.getAllHeaders()) {
+      headers.put(h.getName(), h.getValue());
+    }
 
     int status = response.getStatusLine().getStatusCode();
     HttpEntity entity = response.getEntity();
     
     if (entity == null) // usually b/c of a 204
-    	return new Response(status, null);
+      return new Response(status, null, headers.build());
     
     try (InputStream in = entity.getContent()) {
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       copyInputStream(in, out);
-      return new Response(status, out.toByteArray());
+      return new Response(status, out.toByteArray(), headers.build());
     }
     catch (IOException e) {
       throw new RJTransportError("Failed Request", e);

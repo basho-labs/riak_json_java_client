@@ -16,6 +16,7 @@ import com.basho.riak.json.jackson.JsonSerializable;
 import com.basho.riak.json.jackson.Serialization;
 
 import static com.basho.riak.json.transports.http.Method.GET;
+import static com.basho.riak.json.transports.http.Method.POST;
 import static com.basho.riak.json.transports.http.Method.PUT;
 import static com.basho.riak.json.transports.http.Method.DELETE;
 import static com.basho.riak.json.transports.http.Protocol.HTTP;
@@ -150,9 +151,27 @@ public class HttpTransport implements Transport {
 
   public String insertDocument(String collection_name, Document document) {
     String key = document.getKey();
-    URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/" + key);
     InputStream in = this.fillInputPipe(document);
-    Response response = sendPostOrPut(uri, PUT, in);
-    return (response.status() == 204) ? key : new String(response.body());
+    URI uri = null;
+    if (key != null) {
+      uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/" + key);
+      Response response = sendPostOrPut(uri, PUT, in);
+      return (response.status() == 204) ? key : new String(response.body());
+    }
+    else {
+      uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name);
+      Response response = sendPostOrPut(uri, POST, in);
+      String location_header = response.headers().get("Location");
+      int key_location = location_header.lastIndexOf('/');
+      String new_key = location_header.substring(key_location + 1, location_header.length());
+      return (response.status() == 201) ? new_key : new String(response.body());
+    }
   }
+  
+  public boolean removeDocument(String collection_name, Document document) {
+    String key = document.getKey();
+    URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/" + key);
+    return (sendGetOrDelete(uri, DELETE).status() == 204) ? true : false;
+  }
+  
 }

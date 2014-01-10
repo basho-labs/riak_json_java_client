@@ -14,16 +14,14 @@ public class Collection {
     this.name = name;
     this.transport = transport;
   }
-  
-  public boolean deleteRawJson(String key) { return false; }
-    
-  public QueryResult find(Query query) { return null; }
-  
+
   public Document findByKey(String key) { return null; }
-  
+  /*
+   * https://github.com/basho-labs/riak_json_ruby_client/blob/master/lib/riak_json/client.rb#L75-L79
+   */
   public Document findOne(Query query) { return null; }
-  
-  public String getRawJson(String key) { return null; }
+  public QueryResult find(Query query) { return null; }
+
   
   public boolean deleteSchema() {
     return transport.deleteSchema(name);
@@ -46,16 +44,19 @@ public class Collection {
     return transport.insertDocument(name, document);
   }
   
-  /**
-   * Inserts a JSON document into the collection using the specified Riak key.
-   * @param key The riak_kv key assigned to the document.
-   * @param json The riak_kv value as JSON.
-   * @return The confirmed key of the inserted document.
-   */
-  public String insertRawJson(String key, String json) { return null; }
+  public boolean update(Document document) {
+    if (document == null || document.getKey() == null)
+      return false;
+    transport.insertDocument(name, document);
+    return true;
+  }
   
-  public boolean remove(Document document) { return false; }
-  
+  public boolean remove(Document document) {
+    if (document == null || document.getKey() == null)
+      return false;
+    return transport.removeDocument(name, document);
+  }
+      
   /**
    * Assigns a schema to the collection.
    * @param schema The schema to assign.
@@ -63,9 +64,5 @@ public class Collection {
   public boolean setSchema(Schema schema) {
     return transport.setSchema(name, schema);
   }
-  
-  public boolean update(Document document) { return false; }
-  
-  public boolean update_raw_json(String key, String json) { return false; }
   
 }
