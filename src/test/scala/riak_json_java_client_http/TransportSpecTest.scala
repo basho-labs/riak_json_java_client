@@ -66,20 +66,20 @@ class TransportConfigTest extends FunSpec with BeforeAndAfter {
   describe ("http transport config") {
     val transport = new HttpTransport("somehost", 9876);
     describe("when new") {
-      it ("should contain the host") {
+      it ("[getBaseRiakURL] should contain the host") {
         assert(transport.getBaseRiakURL().contains("somehost"))
       }
-      it ("should contain the port") {
+      it ("[getBaseRiakURL] should contain the port") {
         assert(transport.getBaseRiakURL().contains("9876"))
       }
-      it ("should have default protocol of http") {
+      it ("[getBaseRiakURL] should have default protocol of http") {
         assert(transport.getBaseRiakURL().startsWith("http"))
       }
-      it ("document url should end with document") {
+      it ("[getBaseRiakJsonURL] should end with document") {
         assert(transport.getBaseRiakJsonURL().startsWith("http"))
         assert(transport.getBaseRiakJsonURL().endsWith("document"))
       }
-      it ("collection url should contain document and end with collection") {
+      it ("[getBaseCollectionURL] should contain document and end with collection") {
         assert(transport.getBaseCollectionURL().startsWith("http"))
         assert(transport.getBaseCollectionURL().contains("document"))
         assert(transport.getBaseCollectionURL().endsWith("collection"))
