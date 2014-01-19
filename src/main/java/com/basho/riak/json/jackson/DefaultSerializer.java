@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.basho.riak.json.Document;
 import com.basho.riak.json.Schema;
 import com.basho.riak.json.errors.RJSerializationError;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -19,10 +20,10 @@ import static com.basho.riak.json.utils.StreamUtils.rewindStream;
  * @author Randy Secrist
  */
 public class DefaultSerializer implements Serialization {
-  
+
   // http://wiki.fasterxml.com/JacksonFAQThreadSafety
   private static final ObjectMapper mapper = new ObjectMapper();
-    
+
   public String toJsonString(JsonSerializable object) {
     if (object == null)
       return null;
@@ -44,8 +45,8 @@ public class DefaultSerializer implements Serialization {
       throw unexpectedIOFailure(e);
     }
   }
-  
-  public Schema fromJsonString(String json) {
+
+  public Schema fromSchemaJsonString(String json) {
       Schema rtnval = null;
       try {
         rtnval = mapper.readValue(json, Schema.class);
@@ -58,8 +59,8 @@ public class DefaultSerializer implements Serialization {
       }
       return rtnval;
   }
-  
-  public Schema fromInputStream(InputStream stream) {
+
+  public Schema fromSchemaInputStream(InputStream stream) {
       Schema rtnval = null;
       try {
         rtnval = mapper.readValue(stream, Schema.class);
@@ -72,7 +73,35 @@ public class DefaultSerializer implements Serialization {
       }
       return rtnval;
   }
-  
+
+  public <T extends Document> T fromDocumentJsonString(String json, Class<T> type) {
+    T rtnval = null;
+    try {
+      rtnval = mapper.readValue(json, type);
+    }
+    catch (JsonMappingException | JsonParseException | RuntimeException e) {
+        throw unexpectedReadFailure(json.getBytes(), e);
+      }
+      catch (IOException e) {
+    	throw unexpectedIOFailure(e);
+      }
+      return rtnval;
+  }
+
+  public <T extends Document> T fromDocumentInputStream(InputStream stream, Class<T> type) {
+    T rtnval = null;
+    try {
+      rtnval = mapper.readValue(stream, type);
+    }
+    catch (JsonMappingException | JsonParseException | RuntimeException e) {
+      throw unexpectedReadFailure(rewindStream(stream), e);
+    }
+    catch (IOException e) {
+      throw unexpectedReadFailure(rewindStream(stream), e);
+    }
+    return rtnval;
+  }
+
   private RJSerializationError unexpectedIOFailure(IOException ioe) {
     return new RJSerializationError(
       "Unexpected failure:" + " [ " + ioe.getClass().getSimpleName() + " ], " + ioe.getLocalizedMessage(), ioe);
@@ -87,7 +116,7 @@ public class DefaultSerializer implements Serialization {
 	String message = getErrorTemplate(serialized_data, "Unexpected deserialization failure", cause);
     return new RJSerializationError(serialized_data, message, cause);
   }
-  
+
   private String getErrorTemplate(byte[] serialized_data, String message, Throwable cause) {
     String separator = System.getProperty("line.separator");
     StringBuilder builder = new StringBuilder();

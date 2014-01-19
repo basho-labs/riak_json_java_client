@@ -115,28 +115,28 @@ class SerializationSpecTest extends FunSpec with Matchers with PropertyChecks {
     it ("[fromJsonString] explodes if it gets a non json String") {
       val non_json = "|HL7|NON_JSON|Sillyness"
       intercept[RJSerializationError] {
-        serializer.fromJsonString(non_json)
+        serializer.fromSchemaJsonString(non_json)
       }
       intercept[RJSerializationError] {
         val stream = new ByteArrayInputStream(non_json.getBytes())
-        serializer.fromInputStream(stream)
+        serializer.fromSchemaInputStream(stream)
       }
     }
     
     it ("[fromJsonString] explodes if it gets a unmappable json String") {
       val random_json = "{\"foo\":\"bar\"}"
       intercept[RJSerializationError] {
-        serializer.fromJsonString(random_json);
+        serializer.fromSchemaJsonString(random_json);
       }
       intercept[RJSerializationError] {
         val stream = new ByteArrayInputStream(random_json.getBytes())
-        serializer.fromInputStream(stream)
+        serializer.fromSchemaInputStream(stream)
       }
     }
 
     it ("[fromJsonString] builds a Field from a String") {
       val field_json = "[{\"name\":\"baz\",\"type\":\"integer\",\"required\":true}]"
-      val field = serializer.fromJsonString(field_json).getFields().get(0)
+      val field = serializer.fromSchemaJsonString(field_json).getFields().get(0)
       field.getName() should be === "baz"
       field.getType() should be === INTEGER
       field.isRequired() should be === true
@@ -148,14 +148,14 @@ class SerializationSpecTest extends FunSpec with Matchers with PropertyChecks {
         "{\"name\":\"bar\",\"type\":\"text\",\"required\":false}]"
 
       it ("[fromJsonString] builds a Schema from a String") {
-        val schema = serializer.fromJsonString(schema_json)
+        val schema = serializer.fromSchemaJsonString(schema_json)
         val fields = schema.getFields()
         fields.size() should be === 2
       }
     
       it ("[fromInputStream] builds a Schema from a InputStream") {
         val stream = new ByteArrayInputStream(schema_json.getBytes())
-        val schema = serializer.fromInputStream(stream)
+        val schema = serializer.fromSchemaInputStream(stream)
         val fields = schema.getFields()
         fields.size() should be === 2
       }

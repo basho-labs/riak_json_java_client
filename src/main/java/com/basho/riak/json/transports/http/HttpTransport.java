@@ -92,15 +92,9 @@ public class HttpTransport implements Transport {
   
   public Schema getSchema(String collection_name) {
     URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/schema");
-
-    // get json
-    Response response = sendGetRequest(uri);
-    if (response.status() != 200)
-      return null;
-
-    String json = new String(response.body());
-        
-    return serializer.fromJsonString(json);
+    
+    String json = this.getJSON(uri);
+    return (json != null) ? serializer.fromSchemaJsonString(json) : null;
   }
   
   public boolean setSchema(String collection_name, Schema schema) {
@@ -167,11 +161,24 @@ public class HttpTransport implements Transport {
       return (response.status() == 201) ? new_key : new String(response.body());
     }
   }
-  
+
   public boolean removeDocument(String collection_name, Document document) {
     String key = document.getKey();
     URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/" + key);
     return (sendGetOrDelete(uri, DELETE).status() == 204) ? true : false;
   }
-  
+
+  public <T extends Document> T findByKey(String key, String collection_name, Class<T> type) {
+    URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/" + key);
+    String json = this.getJSON(uri);
+    return (json != null) ? serializer.fromDocumentJsonString(json, type) : null;
+  }
+
+  private String getJSON(URI uri) {
+    Response response = sendGetRequest(uri);
+    if (response.status() != 200)
+      return null;
+
+    return new String(response.body());
+  }
 }

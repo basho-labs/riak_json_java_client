@@ -57,5 +57,13 @@ public interface Transport {
    */
   String insertDocument(String collection_name, Document document);
   
+  /**
+   * Removes a document from Riak.
+   * @param collection_name The collection to remove it from.
+   * @param document The document to remove.
+   * @return True if the operation is a success, false otherwise.
+   */
   boolean removeDocument(String collection_name, Document document);
+  
+  <T extends Document> T findByKey(String key, String collection_name, Class<T> type);
 }

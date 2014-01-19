@@ -1,5 +1,6 @@
 package com.basho.riak.json;
 
+
 /**
  *
  * @author Randy Secrist
@@ -15,12 +16,21 @@ public class Collection {
     this.transport = transport;
   }
 
-  public Document findByKey(String key) { return null; }
+  /**
+   * Fetch document from Riak by key.
+   * @param key The key of the document.
+   * @param type The expected class type of the Document.
+   * @return 
+   */
+  public <T extends Document> T findByKey(String key, Class<T> type) {
+    return transport.findByKey(key, name, type);
+  }
+
   /*
    * https://github.com/basho-labs/riak_json_ruby_client/blob/master/lib/riak_json/client.rb#L75-L79
    */
-  public Document findOne(Query query) { return null; }
-  public QueryResult find(Query query) { return null; }
+  public Document findOne(Query query) { throw new RuntimeException("Not Implemented"); }
+  public QueryResult find(Query query) { throw new RuntimeException("Not Implemented"); }
 
   
   public boolean deleteSchema() {

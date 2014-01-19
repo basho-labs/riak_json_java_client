@@ -3,6 +3,7 @@ package com.basho.riak.json.jackson;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.basho.riak.json.Document;
 import com.basho.riak.json.Schema;
 
 /**
@@ -20,6 +21,8 @@ public interface Serialization {
   void toOutputStream(JsonSerializable json, OutputStream stream);
     
   // readers
-  Schema fromJsonString(String schema_as_json);
-  Schema fromInputStream(InputStream schema_stream);
+  Schema fromSchemaJsonString(String schema_as_json);
+  Schema fromSchemaInputStream(InputStream schema_stream);
+  <T extends Document> T fromDocumentJsonString(String document_as_json, Class<T> type);
+  <T extends Document> T fromDocumentInputStream(InputStream document_stream, Class<T> type);
 }

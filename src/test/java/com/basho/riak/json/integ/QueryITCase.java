@@ -7,29 +7,39 @@ import org.junit.Test;
 import com.basho.riak.json.Client;
 import com.basho.riak.json.Collection;
 import com.basho.riak.json.Document;
+import com.basho.riak.json.QueryResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+
+// Sample Document Class
+class MyDocument implements Document {
+  public MyDocument() { super(); }
+  private String key, firstname;
+  @JsonIgnore public String getKey() { return this.key; }
+  public void setKey(String key) { this.key = key; }
+  public String getFirstname() { return this.firstname; }
+  public void setFirstname(String firstname) { this.firstname = firstname; }
+}
 
 public class QueryITCase {
 
-  class MyDocument implements Document {
-    private String key, firstname;
-    @JsonIgnore public String getKey() { return this.key; }
-    public void setKey(String key) { this.key = key; }
-    public String getFirstname() { return this.firstname; }
-    public void setFirstname(String firstname) { this.firstname = firstname; }
-  }
-
   private MyDocument document;
   private Collection collection;
+  private String key;
 
   @Before
   public void before() {
     Client client = new Client("localhost", 10018);
     collection = client.createCollection("test_collection");
+    key = "123";
     document = new MyDocument();
+    document.setKey(key);
+    document.setFirstname("Walter");
   }
 
   @After
@@ -38,35 +48,41 @@ public class QueryITCase {
 
   @Test
   public void insertWithKey() {
-	document.setKey("123");
-	document.setFirstname("Walter");
     String resulting_key = collection.insert(document);
-    assertEquals("123", resulting_key);
+    assertEquals(key, resulting_key);
   }
 
   @Test
   public void insertWithNoKey() {
-	document.setFirstname("Walter");
+    document.setKey(null);
     String resulting_key = collection.insert(document);
     assertTrue(resulting_key != null);
+    assertFalse(key.equals(resulting_key));
   }
 
   @Test
   public void updateExisting() {
-	document.setKey("123");
-    document.setFirstname("White");
     assertTrue(collection.update(document));
   }
 
   @Test
   public void queryByKey() {
+    // non existing key
+    MyDocument result = collection.findByKey("some_new_key", MyDocument.class);
+    assertNull(result);
+    
+    // existing key
+    result = collection.findByKey(key, MyDocument.class);
+    assertEquals(MyDocument.class, result.getClass());
   }
 
   @Test
   public void queryOne() {
+    
   }
 
   @Test
   public void queryAll() {
+    
   }
 }

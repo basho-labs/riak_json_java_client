@@ -3,8 +3,6 @@ package com.basho.riak.json.transports.http;
 import java.io.InputStream;
 import java.net.URI;
 
-import org.apache.http.StatusLine;
-
 /**
  *
  * @author Randy Secrist
