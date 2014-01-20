@@ -6,6 +6,11 @@
   <version>0.0.1-SNAPSHOT</version>
   <url>http://basho.com</url>
 
+  <organization>
+    <name>Basho Technologies</name>
+    <url>http://basho.com</url>
+  </organization>
+
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -183,6 +188,14 @@
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>0.6.3.201306030806</version>
+        <configuration>
+          <excludes>
+            <!-- ignore scala tests -->
+            <exclude>**/riak_json_java_client/**)</exclude>
+            <exclude>**/riak_json_java_client_http/**)</exclude>
+            <exclude>**/riak_json_java_client_serialization/**)</exclude>
+          </excludes>
+        </configuration>
         <executions>
           <execution>
             <id>jacoco-initialize</id>
