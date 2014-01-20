@@ -1,5 +1,7 @@
 package com.basho.riak.json.integ;
 
+import java.util.concurrent.Callable;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,12 +11,15 @@ import com.basho.riak.json.Collection;
 import com.basho.riak.json.Field;
 import com.basho.riak.json.Schema;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
+import static com.jayway.awaitility.Awaitility.await;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static com.basho.riak.json.Field.Type.INTEGER;
 import static com.basho.riak.json.Field.Type.STRING;
 import static com.basho.riak.json.Field.Type.TEXT;
 import static com.basho.riak.json.Field.Type.MULTI_STRING;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 public class SchemaAdminITCase {
 	
@@ -25,14 +30,17 @@ public class SchemaAdminITCase {
     Client client = new Client("localhost", 10018);
     collection = client.createCollection("test_collection");
     collection.deleteSchema();
+    await().atMost(5, SECONDS).until(collectionHasNoSchema());
   }
   
   @After
   public void after() {
+    collection.deleteSchema();
+    await().atMost(5, SECONDS).until(collectionHasNoSchema());
   }
 
   @Test
-  public void collectionHasNoSchema() {
+  public void collectionHasNoSchemaByDefault() {
     assertFalse(collection.hasSchema());
   }
 
@@ -50,6 +58,23 @@ public class SchemaAdminITCase {
     builder.addField(new Field("level1.level2", INTEGER));
 
     assertTrue(collection.setSchema(builder.build()));
+    await().atMost(5, SECONDS).until(collectionHasSchema());
     assertTrue(collection.hasSchema());
   }
+
+  private Callable<Boolean> collectionHasSchema() {
+    return new Callable<Boolean>() {
+      public Boolean call() throws Exception {
+        return collection.hasSchema();
+      }
+    };
+  }
+  private Callable<Boolean> collectionHasNoSchema() {
+    return new Callable<Boolean>() {
+      public Boolean call() throws Exception {
+        return !collection.hasSchema();
+      }
+    };
+  }
+
 }

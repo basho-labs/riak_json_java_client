@@ -1,5 +1,7 @@
 package com.basho.riak.json.integ;
 
+import java.util.concurrent.Callable;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -7,14 +9,15 @@ import org.junit.Test;
 import com.basho.riak.json.Client;
 import com.basho.riak.json.Collection;
 import com.basho.riak.json.Document;
-import com.basho.riak.json.QueryResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import static com.jayway.awaitility.Awaitility.await;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 // Sample Document Class
 class MyDocument implements Document {
@@ -41,6 +44,7 @@ public class QueryITCase {
     document.setKey(key);
     document.setFirstname("Walter");
     collection.insert(document);
+    await().atMost(5, SECONDS).until(documentIsReadable());
   }
 
   @After
@@ -60,6 +64,8 @@ public class QueryITCase {
     assertTrue(resulting_key != null);
     assertFalse(key.equals(resulting_key));
     assertNotNull(document.getKey());
+
+    await().atMost(5, SECONDS).until(documentIsReadable());
     assertTrue(collection.remove(document));
   }
 
@@ -88,4 +94,14 @@ public class QueryITCase {
   @Test
   public void queryAll() {
   }
+  
+  private Callable<Boolean> documentIsReadable() {
+    return new Callable<Boolean>() {
+      public Boolean call() throws Exception {
+        Document found = collection.findByKey(document.getKey(), document.getClass());
+        return found != null;
+      }
+    };
+  }
+
 }
