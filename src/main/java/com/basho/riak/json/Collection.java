@@ -23,7 +23,7 @@ public class Collection {
    * @return 
    */
   public <T extends Document> T findByKey(String key, Class<T> type) {
-    return transport.findByKey(key, name, type);
+    return transport.findByKey(name, key, type);
   }
 
   /*

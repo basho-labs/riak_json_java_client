@@ -169,7 +169,7 @@ public class HttpTransport implements Transport {
     return (sendGetOrDelete(uri, DELETE).status() == 204) ? true : false;
   }
 
-  public <T extends Document> T findByKey(String key, String collection_name, Class<T> type) {
+  public <T extends Document> T findByKey(String collection_name, String key, Class<T> type) {
     URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/" + key);
     String json = this.getJSON(uri);
     return (json != null) ? serializer.fromDocumentJsonString(json, type) : null;

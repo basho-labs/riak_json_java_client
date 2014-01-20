@@ -65,5 +65,5 @@ public interface Transport {
    */
   boolean removeDocument(String collection_name, Document document);
   
-  <T extends Document> T findByKey(String key, String collection_name, Class<T> type);
+  <T extends Document> T findByKey(String collection_name, String key, Class<T> type);
 }
