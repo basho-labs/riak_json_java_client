@@ -158,6 +158,7 @@ public class HttpTransport implements Transport {
       String location_header = response.headers().get("Location");
       int key_location = location_header.lastIndexOf('/');
       String new_key = location_header.substring(key_location + 1, location_header.length());
+      document.setKey(new_key);
       return (response.status() == 201) ? new_key : new String(response.body());
     }
   }

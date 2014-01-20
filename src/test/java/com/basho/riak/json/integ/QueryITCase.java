@@ -40,6 +40,7 @@ public class QueryITCase {
     document = new MyDocument();
     document.setKey(key);
     document.setFirstname("Walter");
+    collection.insert(document);
   }
 
   @After
@@ -53,11 +54,13 @@ public class QueryITCase {
   }
 
   @Test
-  public void insertWithNoKey() {
+  public void insertWithNoKeyThenRemove() {
     document.setKey(null);
     String resulting_key = collection.insert(document);
     assertTrue(resulting_key != null);
     assertFalse(key.equals(resulting_key));
+    assertNotNull(document.getKey());
+    assertTrue(collection.remove(document));
   }
 
   @Test
@@ -67,22 +70,22 @@ public class QueryITCase {
 
   @Test
   public void queryByKey() {
-    // non existing key
-    MyDocument result = collection.findByKey("some_new_key", MyDocument.class);
+    // not found case
+    MyDocument result = collection.findByKey("not_found_key", MyDocument.class);
     assertNull(result);
     
-    // existing key
+    // found case
     result = collection.findByKey(key, MyDocument.class);
     assertEquals(MyDocument.class, result.getClass());
+    assertNull(result.getKey());  // explicitly ignored in test model
+    assertEquals(document.getFirstname(), result.getFirstname());
   }
 
   @Test
   public void queryOne() {
-    
   }
 
   @Test
   public void queryAll() {
-    
   }
 }

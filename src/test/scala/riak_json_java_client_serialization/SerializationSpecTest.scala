@@ -32,8 +32,8 @@ class SerializationSpecTest extends FunSpec with Matchers with PropertyChecks {
   }
 
   class MySquare (length:Int, width:Int) extends Document {
-    // use @JsonIgnore as well if omitted key from
-    // serialized json is desired
+    // use @JsonIgnore if removing the key from the
+    // serialized json output is desired
     @BeanProperty var key: String = _
     
     private var _length = length
@@ -112,7 +112,7 @@ class SerializationSpecTest extends FunSpec with Matchers with PropertyChecks {
       stream.toByteArray().length should be > 0
     }
     
-    it ("[fromJsonString] explodes if it gets a non json String") {
+    it ("[fromSchemaJsonString] explodes if it gets a non json String") {
       val non_json = "|HL7|NON_JSON|Sillyness"
       intercept[RJSerializationError] {
         serializer.fromSchemaJsonString(non_json)
@@ -123,7 +123,7 @@ class SerializationSpecTest extends FunSpec with Matchers with PropertyChecks {
       }
     }
     
-    it ("[fromJsonString] explodes if it gets a unmappable json String") {
+    it ("[fromSchemaJsonString] explodes if it gets a unmappable json String") {
       val random_json = "{\"foo\":\"bar\"}"
       intercept[RJSerializationError] {
         serializer.fromSchemaJsonString(random_json);
@@ -134,7 +134,7 @@ class SerializationSpecTest extends FunSpec with Matchers with PropertyChecks {
       }
     }
 
-    it ("[fromJsonString] builds a Field from a String") {
+    it ("[fromSchemaJsonString] builds a Field from a String") {
       val field_json = "[{\"name\":\"baz\",\"type\":\"integer\",\"required\":true}]"
       val field = serializer.fromSchemaJsonString(field_json).getFields().get(0)
       field.getName() should be === "baz"
@@ -147,13 +147,13 @@ class SerializationSpecTest extends FunSpec with Matchers with PropertyChecks {
         "{\"name\":\"foo\",\"type\":\"string\",\"required\":true}," +
         "{\"name\":\"bar\",\"type\":\"text\",\"required\":false}]"
 
-      it ("[fromJsonString] builds a Schema from a String") {
+      it ("[fromSchemaJsonString] builds a Schema from a String") {
         val schema = serializer.fromSchemaJsonString(schema_json)
         val fields = schema.getFields()
         fields.size() should be === 2
       }
     
-      it ("[fromInputStream] builds a Schema from a InputStream") {
+      it ("[fromSchemaInputStream] builds a Schema from a InputStream") {
         val stream = new ByteArrayInputStream(schema_json.getBytes())
         val schema = serializer.fromSchemaInputStream(stream)
         val fields = schema.getFields()

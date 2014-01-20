@@ -14,13 +14,15 @@ import com.basho.riak.json.Field.Type._
 import com.basho.riak.json.jackson._
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+class MyLine (len:Int) extends Document {
+  def this() =  this(0)
+  @BeanProperty var key: String = _
+  private var _length = len
+  def getLength: Int = _length
+  def setLength(l: Int) = _length = l
+}
+
 class DocumentSpecTest extends FunSpec with MockitoSugar with Matchers {
-  
-  class MyLine (length:Int) extends Document {
-    @BeanProperty var key: String = _
-    private var _length = length
-    def getLength = _length    
-  }
 
   describe ("document specification tests") {
     val serializer = new DefaultSerializer()
@@ -28,6 +30,15 @@ class DocumentSpecTest extends FunSpec with MockitoSugar with Matchers {
 
     it ("may not have a key") {
       assert(document.getKey == null)
+    }
+
+    it ("serializeable to json") {
+      val json = serializer.toJsonString(document)
+      assert(json != null)
+      
+      val result = serializer.fromDocumentJsonString(json, document.getClass())
+      assert(result != null)
+      result.getLength should be === document.getLength
     }
   }
   
