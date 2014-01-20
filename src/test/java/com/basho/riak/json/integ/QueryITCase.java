@@ -1,5 +1,6 @@
 package com.basho.riak.json.integ;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.junit.After;
@@ -9,7 +10,11 @@ import org.junit.Test;
 import com.basho.riak.json.Client;
 import com.basho.riak.json.Collection;
 import com.basho.riak.json.Document;
+import com.basho.riak.json.Query;
+import com.basho.riak.json.QueryResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -49,6 +54,8 @@ public class QueryITCase {
 
   @After
   public void after() {
+    document.setKey(key);
+    collection.remove(document);
   }
 
   @Test
@@ -89,12 +96,43 @@ public class QueryITCase {
 
   @Test
   public void queryOne() {
+    String[] names = {"Drew", "Dmnitry", "Casey"};
+    List<Document> documents = loadDocs(names);loadDocs(names);
+
+    Query q = null;
+    QueryResult qr = null;
+
+    unloadDocs(documents);
   }
 
   @Test
   public void queryAll() {
+    String[] names = {"Drew", "Dmnitry", "Casey"};
+    List<Document> documents = loadDocs(names);
+
+    Query q = null;
+    QueryResult qr = null;
+
+    unloadDocs(documents);
+  }
+
+  private List<Document> loadDocs(String[] firstnames) {
+    Builder<Document> list = ImmutableList.builder();
+    for (String firstname : firstnames) {
+      MyDocument document = new MyDocument();
+      document.setFirstname(firstname);
+      collection.insert(document);
+      list.add(document);
+    }
+    return list.build();
   }
   
+  private void unloadDocs(List<Document> documents) {
+    for (Document doc : documents) {
+      collection.remove(doc);
+    }
+  }
+
   private Callable<Boolean> documentIsReadable() {
     return new Callable<Boolean>() {
       public Boolean call() throws Exception {
