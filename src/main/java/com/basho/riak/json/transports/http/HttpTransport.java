@@ -8,6 +8,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import com.basho.riak.json.Document;
+import com.basho.riak.json.Query;
+import com.basho.riak.json.QueryResult;
 import com.basho.riak.json.Schema;
 import com.basho.riak.json.Transport;
 import com.basho.riak.json.errors.RJTransportError;
@@ -173,6 +175,16 @@ public class HttpTransport implements Transport {
     URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/" + key);
     String json = this.getJSON(uri);
     return (json != null) ? serializer.fromDocumentJsonString(json, type) : null;
+  }
+
+  /*
+   * https://github.com/basho-labs/riak_json_ruby_client/blob/master/lib/riak_json/client.rb#L75-L79
+   */
+  public <T extends Document> T findOne(Query<T> query) {
+    throw new RuntimeException("Not Implemented");
+  }
+  public <T extends Document> QueryResult<T> findAll(Query<T> query) {
+    throw new RuntimeException("Not Implemented");
   }
 
   private String getJSON(URI uri) {

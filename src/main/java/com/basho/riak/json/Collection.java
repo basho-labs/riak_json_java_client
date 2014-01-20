@@ -18,19 +18,21 @@ public class Collection {
 
   /**
    * Fetch document from Riak by key.
-   * @param key The key of the document.
-   * @param type The expected class type of the Document.
-   * @return 
+   * @param key The key of the document to locate.
+   * @param type The expected concrete class type of the Document.
+   * @return The document (as a java object) if found, null otherwise.
    */
   public <T extends Document> T findByKey(String key, Class<T> type) {
     return transport.findByKey(name, key, type);
   }
 
-  /*
-   * https://github.com/basho-labs/riak_json_ruby_client/blob/master/lib/riak_json/client.rb#L75-L79
-   */
-  public Document findOne(Query query) { throw new RuntimeException("Not Implemented"); }
-  public QueryResult find(Query query) { throw new RuntimeException("Not Implemented"); }
+  public <T extends Document> T findOne(Query<T> query) {
+    return transport.findOne(query);
+  }
+  
+  public <T extends Document> QueryResult<T> find(Query<T> query) {
+    return transport.findAll(query);
+  }
 
   
   public boolean deleteSchema() {

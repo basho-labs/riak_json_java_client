@@ -4,6 +4,6 @@ package com.basho.riak.json;
  *
  * @author Randy Secrist
  */
-public class Query {
+public class Query<T> {
 
 }
