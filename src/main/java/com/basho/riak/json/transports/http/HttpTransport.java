@@ -34,7 +34,7 @@ public class HttpTransport implements Transport {
   private int port;
   private RestClient client;
   private Serialization serializer;
-      
+
   public HttpTransport(String host, int port) {
     super();
     this.protocol = HTTP;
@@ -43,106 +43,65 @@ public class HttpTransport implements Transport {
     setRestClient(new ApacheRestClient());
     setSerializer(new DefaultSerializer());
   }
-  
+
   public void setProtocol(Protocol protocol) {
     this.protocol = protocol;
   }
-  
+
   public void setRestClient(RestClient client) {
     this.client = client;
   }
-  
+
   public void setSerializer(Serialization serializer) {
     this.serializer = serializer;
   }
-  
+
   public String getBaseRiakURL() {
     return protocol + "://" + host + ":" + port;
   }
-  
+
   public String getBaseRiakJsonURL() {
     return getBaseRiakURL() + "/document";
   }
-  
+
   public String getBaseCollectionURL() {
     return getBaseRiakJsonURL() + "/collection";
   }
-  
+
   public String toString() {
     return getBaseRiakURL();
   }
 
-  /* Transport API (Move to Interface) */
-  // TODO: build query api
-  // use the base urls to do the following:
-  //   setDocument, getDocument
-  //   Query
-  
   public boolean ping() {
     URI uri = this.buildURL(getBaseRiakURL(), "/ping");
     return (sendGetRequest(uri).status() == 200) ? true : false;
   }
-  
+
   public boolean pingKV() {
     URI uri = this.buildURL(getBaseRiakURL(), "/buckets/not_a_bucket/keys/not_a_key");
     return (sendGetRequest(uri).status() == 404) ? true : false;
   }
-  
+
   public boolean pingRJ() {
     throw new RJTransportError("not implemented yet");
   }
-  
+
   public Schema getSchema(String collection_name) {
     URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/schema");
     
     String json = this.getJSON(uri);
     return (json != null) ? serializer.fromSchemaJsonString(json) : null;
   }
-  
+
   public boolean setSchema(String collection_name, Schema schema) {
     URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/schema");
     InputStream in = this.fillInputPipe(schema);
     return (sendPostOrPut(uri, PUT, in).status() == 204) ? true : false;
   }
-  
+
   public boolean deleteSchema(String collection_name) {
     URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/schema");
     return (sendGetOrDelete(uri, DELETE).status() == 204) ? true : false;
-  }
-  
-  /* Deeply Internal (Used only by Transport API) */
-  private URI buildURL(String base, String path) {
-    try {
-      URI uri = new URI(base + path);
-      return uri;
-    }
-    catch (URISyntaxException e) {
-      throw new RJTransportError("Invalid Riak URI", e);
-    }
-  }
-  
-  private Response sendGetRequest(URI uri) {
-    return this.sendGetOrDelete(uri, GET);
-  }
-
-  private Response sendGetOrDelete(URI uri, Method method) {
-    return client.sendGetOrDelete(uri, method);
-  }
-      
-  private Response sendPostOrPut(URI uri, Method method, InputStream input) {
-    return client.sendPostOrPut(uri, method, input);
-  }
-  
-  private InputStream fillInputPipe(JsonSerializable json) {
-    PipedInputStream in = new PipedInputStream(4096);
-    
-    try (PipedOutputStream stream = new PipedOutputStream(in)) {
-      serializer.toOutputStream(json, stream);
-    }
-    catch (IOException e) {
-      throw new RJTransportError("Unexpected IOException while setting up response pipe.", e);
-    }
-    return in;
   }
 
   public String insertDocument(String collection_name, Document document) {
@@ -177,21 +136,66 @@ public class HttpTransport implements Transport {
     return (json != null) ? serializer.fromDocumentJsonString(json, type) : null;
   }
 
-  /*
-   * https://github.com/basho-labs/riak_json_ruby_client/blob/master/lib/riak_json/client.rb#L75-L79
-   */
   public <T extends Document> T findOne(Query<T> query) {
+    /* Extract Query Bits
+    String collection_name = query.collectionName();
+    String json = query.getQuery();
+    Class<T> type = query.getType();
+    
+    // Form URI & Input Pipe
+    // Direct JSON == Brittle until QueryParser is built to work with Query.
+    URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/query/one");
+    InputStream in = this.fillInputPipe(json);
+    Response response = this.sendPostOrPut(uri, PUT, in);
+    */
     throw new RuntimeException("Not Implemented");
   }
+
   public <T extends Document> QueryResult<T> findAll(Query<T> query) {
+    /*
+    URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/query/all");
+    */
     throw new RuntimeException("Not Implemented");
+  }
+
+  private URI buildURL(String base, String path) {
+    try {
+      URI uri = new URI(base + path);
+      return uri;
+    }
+    catch (URISyntaxException e) {
+      throw new RJTransportError("Invalid Riak URI", e);
+    }
+  }
+
+  private Response sendGetRequest(URI uri) {
+    return this.sendGetOrDelete(uri, GET);
+  }
+
+  private Response sendGetOrDelete(URI uri, Method method) {
+    return client.sendGetOrDelete(uri, method);
+  }
+
+  private Response sendPostOrPut(URI uri, Method method, InputStream input) {
+    return client.sendPostOrPut(uri, method, input);
+  }
+
+  private InputStream fillInputPipe(JsonSerializable json) {
+    PipedInputStream in = new PipedInputStream(4096);
+    
+    try (PipedOutputStream stream = new PipedOutputStream(in)) {
+      serializer.toOutputStream(json, stream);
+    }
+    catch (IOException e) {
+      throw new RJTransportError("Unexpected IOException while setting up response pipe.", e);
+    }
+    return in;
   }
 
   private String getJSON(URI uri) {
     Response response = sendGetRequest(uri);
     if (response.status() != 200)
       return null;
-
     return new String(response.body());
   }
 }
