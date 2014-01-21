@@ -1,8 +1,5 @@
 package com.basho.riak.json;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.basho.riak.json.transports.http.HttpTransport;
 
 /**
@@ -14,7 +11,6 @@ import com.basho.riak.json.transports.http.HttpTransport;
 public class Client {
   
   private Transport transport;
-  private Map<String, Collection> collection_cache;
   
   public Client(String host, int port) {
     super();
@@ -48,7 +44,6 @@ public class Client {
   // ---- Internals
   
   private void init_internals(String host, int port) {
-    this.collection_cache = new HashMap<String, Collection>();
     this.transport = new HttpTransport(host, port);
   }
 }
