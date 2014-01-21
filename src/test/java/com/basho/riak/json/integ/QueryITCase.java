@@ -97,7 +97,7 @@ public class QueryITCase {
   @Test
   public void queryOne() {
     String[] names = {"Drew", "Dmitry", "Casey"};
-    List<Document> documents = loadDocs(names);loadDocs(names);
+    List<Document> documents = loadDocs(names);
 
     String q = "{\"firstname\":\"Casey\"}";
     final Query<MyDocument> query = new Query<MyDocument>(q, MyDocument.class);
@@ -131,9 +131,8 @@ public class QueryITCase {
       await().atMost(5, SECONDS).until(new Callable<Boolean>() {
         public Boolean call() throws Exception {
           QueryResult<MyDocument> qr = collection.findAll(query);
-          if (qr != null)
-            assertEquals(4, qr.getDocuments().size());
-          return qr != null;
+          // total size = ['Walter', 'Drew', 'Dmitry', 'Casey'] = 4
+          return qr != null && qr.getDocuments().size() == 4;
         }
       });
     }
@@ -146,9 +145,9 @@ public class QueryITCase {
     Builder<Document> list = ImmutableList.builder();
     for (int i = 0; i < firstnames.length; i++) {
       MyDocument document = new MyDocument();
-      document.setKey(Integer.toString(i));
       document.setFirstname(firstnames[i]);
-      collection.insert(document);
+      String new_key = collection.insert(document);
+      assertEquals(new_key, document.getKey());
       list.add(document);
     }
     return list.build();
