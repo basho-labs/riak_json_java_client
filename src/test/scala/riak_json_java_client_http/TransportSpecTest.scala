@@ -112,7 +112,7 @@ class TransportSpecTest extends FunSpec with MockitoSugar with Matchers with Bef
         val result = transport.insertDocument(collection_name, document)
         result should be === expected_body
       }
-      
+
     }
 
   }
