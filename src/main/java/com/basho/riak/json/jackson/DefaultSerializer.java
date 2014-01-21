@@ -3,12 +3,18 @@ package com.basho.riak.json.jackson;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.basho.riak.json.Document;
+import com.basho.riak.json.QueryResult;
 import com.basho.riak.json.Schema;
 import com.basho.riak.json.errors.RJSerializationError;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -36,7 +42,7 @@ public class DefaultSerializer implements Serialization {
     }
     return rtnval;
   }
-  
+
   public void toOutputStream(JsonSerializable json, OutputStream stream) {
     try {
       mapper.writeValue(stream, json);
@@ -47,31 +53,31 @@ public class DefaultSerializer implements Serialization {
   }
 
   public Schema fromSchemaJsonString(String json) {
-      Schema rtnval = null;
-      try {
-        rtnval = mapper.readValue(json, Schema.class);
-      }
-      catch (JsonMappingException | JsonParseException | RuntimeException e) {
-        throw unexpectedReadFailure(json.getBytes(), e);
-      }
-      catch (IOException e) {
-    	throw unexpectedIOFailure(e);
-      }
-      return rtnval;
+    Schema rtnval = null;
+    try {
+      rtnval = mapper.readValue(json, Schema.class);
+    }
+    catch (JsonMappingException | JsonParseException | RuntimeException e) {
+      throw unexpectedReadFailure(json.getBytes(), e);
+    }
+    catch (IOException e) {
+      throw unexpectedIOFailure(e);
+    }
+    return rtnval;
   }
 
   public Schema fromSchemaInputStream(InputStream stream) {
-      Schema rtnval = null;
-      try {
-        rtnval = mapper.readValue(stream, Schema.class);
-      }
-      catch (JsonMappingException | JsonParseException | RuntimeException e) {
-        throw unexpectedReadFailure(rewindStream(stream), e);
-      }
-      catch (IOException e) {
-        throw unexpectedReadFailure(rewindStream(stream), e);
-      }
-      return rtnval;
+    Schema rtnval = null;
+    try {
+      rtnval = mapper.readValue(stream, Schema.class);
+    }
+    catch (JsonMappingException | JsonParseException | RuntimeException e) {
+      throw unexpectedReadFailure(rewindStream(stream), e);
+    }
+    catch (IOException e) {
+      throw unexpectedReadFailure(rewindStream(stream), e);
+    }
+    return rtnval;
   }
 
   public <T extends Document> T fromDocumentJsonString(String json, Class<T> type) {
@@ -80,12 +86,12 @@ public class DefaultSerializer implements Serialization {
       rtnval = mapper.readValue(json, type);
     }
     catch (JsonMappingException | JsonParseException | RuntimeException e) {
-        throw unexpectedReadFailure(json.getBytes(), e);
-      }
-      catch (IOException e) {
-    	throw unexpectedIOFailure(e);
-      }
-      return rtnval;
+      throw unexpectedReadFailure(json.getBytes(), e);
+    }
+    catch (IOException e) {
+      throw unexpectedIOFailure(e);
+    }
+    return rtnval;
   }
 
   public <T extends Document> T fromDocumentInputStream(InputStream stream, Class<T> type) {
@@ -99,6 +105,54 @@ public class DefaultSerializer implements Serialization {
     catch (IOException e) {
       throw unexpectedReadFailure(rewindStream(stream), e);
     }
+    return rtnval;
+  }
+
+  public <T extends Document> T fromYZString(String json, Class<T> type) {
+    T rtnval = null;
+
+    try {
+      Map<String,Object> intermediate = new HashMap<String,Object>();
+      intermediate = mapper.readValue(json, new TypeReference<HashMap<String,Object>>(){});
+      rtnval = this.fromYZ(intermediate, type);
+    }
+    catch (JsonMappingException | JsonParseException | RuntimeException e) {
+      throw unexpectedReadFailure(json.getBytes(), e);
+    }
+    catch (IOException e) {
+      throw unexpectedIOFailure(e);
+    }
+    return rtnval;
+  }
+
+  public <T extends Document> QueryResult<T> fromYZResult(String json, Class<T> type) {
+    QueryResult<T> rtnval = null;
+    try {
+      Map<String,Object> intermediate = new HashMap<String,Object>();
+      intermediate = mapper.readValue(json, new TypeReference<HashMap<String,Object>>(){});
+      List<Map<String,Object>> data = (List) intermediate.remove("data");
+
+      List<T> documents = new ArrayList<T>();
+      for (int i = 0; i < data.size(); i++) {
+        Map<String,Object> json_map = data.get(i);
+        documents.add(this.fromYZ(json_map, type));
+      }
+      rtnval = new QueryResult<T>(documents, intermediate);
+    }
+    catch (JsonMappingException | JsonParseException | RuntimeException e) {
+      throw unexpectedReadFailure(json.getBytes(), e);
+    }
+    catch (IOException e) {
+      throw unexpectedIOFailure(e);
+    }
+    return rtnval;
+  }
+
+  private <T extends Document> T fromYZ(Map<String,Object> intermediate, Class<T> type) throws JsonMappingException, JsonProcessingException, IOException {
+    String key = (String) intermediate.remove("_id");
+    String json = mapper.writeValueAsString(intermediate);
+    T rtnval = mapper.readValue(json, type);
+    rtnval.setKey(key);
     return rtnval;
   }
 

@@ -27,14 +27,13 @@ public class Collection {
   }
 
   public <T extends Document> T findOne(Query<T> query) {
-    return transport.findOne(query);
+    return transport.findOne(name, query);
   }
   
-  public <T extends Document> QueryResult<T> find(Query<T> query) {
-    return transport.findAll(query);
+  public <T extends Document> QueryResult<T> findAll(Query<T> query) {
+    return transport.findAll(name, query);
   }
 
-  
   public boolean deleteSchema() {
     return transport.deleteSchema(name);
   }

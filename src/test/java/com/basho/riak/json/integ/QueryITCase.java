@@ -49,7 +49,7 @@ public class QueryITCase {
     document.setKey(key);
     document.setFirstname("Walter");
     collection.insert(document);
-    await().atMost(5, SECONDS).until(documentIsReadable());
+    await().atMost(5, SECONDS).until(documentIsReadable(document));
   }
 
   @After
@@ -72,7 +72,7 @@ public class QueryITCase {
     assertFalse(key.equals(resulting_key));
     assertNotNull(document.getKey());
 
-    await().atMost(5, SECONDS).until(documentIsReadable());
+    await().atMost(5, SECONDS).until(documentIsReadable(document));
     assertTrue(collection.remove(document));
   }
 
@@ -96,31 +96,50 @@ public class QueryITCase {
 
   @Test
   public void queryOne() {
-    String[] names = {"Drew", "Dmnitry", "Casey"};
+    String[] names = {"Drew", "Dmitry", "Casey"};
     List<Document> documents = loadDocs(names);loadDocs(names);
 
-    Query q = null;
-    QueryResult qr = null;
+    // wait for yz index to get built
+    try { Thread.sleep(3500); } catch (Throwable t) { t.printStackTrace(); }
 
-    unloadDocs(documents);
+    String q = "{\"firstname\":\"Casey\"}";
+    Query<MyDocument> query = new Query<MyDocument>(q, MyDocument.class);
+
+    try {
+      MyDocument document = collection.findOne(query);
+      assertNotNull(document);
+    }
+    finally {
+      unloadDocs(documents);
+    }
   }
 
   @Test
   public void queryAll() {
-    String[] names = {"Drew", "Dmnitry", "Casey"};
+    String[] names = {"Drew", "Dmitry", "Casey"};
     List<Document> documents = loadDocs(names);
 
-    Query q = null;
-    QueryResult qr = null;
+     // wait for yz index to get built
+    try { Thread.sleep(3500); } catch (Throwable t) { t.printStackTrace(); }
 
-    unloadDocs(documents);
+    String q = "{\"*\":\"*\"}";
+    Query<MyDocument> query = new Query<MyDocument>(q, MyDocument.class);
+    
+    try {
+      QueryResult<MyDocument> qr = collection.findAll(query);
+      assertEquals(4, qr.getTotal());
+    }
+    finally {
+      unloadDocs(documents);
+    }
   }
 
   private List<Document> loadDocs(String[] firstnames) {
     Builder<Document> list = ImmutableList.builder();
-    for (String firstname : firstnames) {
+    for (int i = 0; i < firstnames.length; i++) {
       MyDocument document = new MyDocument();
-      document.setFirstname(firstname);
+      document.setKey(Integer.toString(i));
+      document.setFirstname(firstnames[i]);
       collection.insert(document);
       list.add(document);
     }
@@ -130,14 +149,24 @@ public class QueryITCase {
   private void unloadDocs(List<Document> documents) {
     for (Document doc : documents) {
       collection.remove(doc);
+      await().atMost(5, SECONDS).until(documentIsDeleted(doc));
     }
   }
 
-  private Callable<Boolean> documentIsReadable() {
+  private Callable<Boolean> documentIsReadable(final Document document) {
     return new Callable<Boolean>() {
       public Boolean call() throws Exception {
         Document found = collection.findByKey(document.getKey(), document.getClass());
         return found != null;
+      }
+    };
+  }
+
+  private Callable<Boolean> documentIsDeleted(final Document document) {
+    return new Callable<Boolean>() {
+      public Boolean call() throws Exception {
+        Document found = collection.findByKey(document.getKey(), document.getClass());
+        return found == null;
       }
     };
   }

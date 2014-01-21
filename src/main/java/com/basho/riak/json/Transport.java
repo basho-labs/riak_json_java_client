@@ -74,7 +74,7 @@ public interface Transport {
    */
   <T extends Document> T findByKey(String collection_name, String key, Class<T> type);
 
-  <T extends Document> T findOne(Query<T> query);
+  <T extends Document> T findOne(String collection_name, Query<T> query);
 
-  <T extends Document> QueryResult<T> findAll(Query<T> query);
+  <T extends Document> QueryResult<T> findAll(String collection_name, Query<T> query);
 }

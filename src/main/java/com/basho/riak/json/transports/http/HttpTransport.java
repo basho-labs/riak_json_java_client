@@ -1,5 +1,6 @@
 package com.basho.riak.json.transports.http;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
@@ -89,7 +90,7 @@ public class HttpTransport implements Transport {
   public Schema getSchema(String collection_name) {
     URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/schema");
     
-    String json = this.getJSON(uri);
+    String json = this.getJSON(sendGetRequest(uri));
     return (json != null) ? serializer.fromSchemaJsonString(json) : null;
   }
 
@@ -132,31 +133,31 @@ public class HttpTransport implements Transport {
 
   public <T extends Document> T findByKey(String collection_name, String key, Class<T> type) {
     URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/" + key);
-    String json = this.getJSON(uri);
+    String json = this.getJSON(sendGetRequest(uri));
     return (json != null) ? serializer.fromDocumentJsonString(json, type) : null;
   }
 
-  public <T extends Document> T findOne(Query<T> query) {
-    /* Extract Query Bits
-    String collection_name = query.collectionName();
+  public <T extends Document> T findOne(String collection_name, Query<T> query) {
     String json = query.getQuery();
     Class<T> type = query.getType();
-    
-    // Form URI & Input Pipe
-    // Direct JSON == Brittle until QueryParser is built to work with Query.
     URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/query/one");
-    InputStream in = this.fillInputPipe(json);
-    Response response = this.sendPostOrPut(uri, PUT, in);
-    */
-    throw new RuntimeException("Not Implemented");
+    InputStream in = new ByteArrayInputStream(json.getBytes());
+    String response_body = this.getJSON(this.sendPostOrPut(uri, PUT, in));
+
+    return (response_body != null) ? serializer.fromYZString(response_body, type) : null;
   }
 
-  public <T extends Document> QueryResult<T> findAll(Query<T> query) {
-    /*
+  public <T extends Document> QueryResult<T> findAll(String collection_name, Query<T> query) {
+    String json = query.getQuery();
+    Class<T> type = query.getType();
     URI uri = this.buildURL(getBaseCollectionURL(), "/" + collection_name + "/query/all");
-    */
-    throw new RuntimeException("Not Implemented");
+    InputStream in = new ByteArrayInputStream(json.getBytes());
+    String response_body = this.getJSON(this.sendPostOrPut(uri, PUT, in));
+
+    return (response_body != null) ? serializer.fromYZResult(response_body, type) : null;
   }
+
+  /* PRIVATE FUNS */
 
   private URI buildURL(String base, String path) {
     try {
@@ -192,8 +193,7 @@ public class HttpTransport implements Transport {
     return in;
   }
 
-  private String getJSON(URI uri) {
-    Response response = sendGetRequest(uri);
+  private String getJSON(Response response) {
     if (response.status() != 200)
       return null;
     return new String(response.body());
