@@ -125,7 +125,7 @@ collection.insertDocument(sf);
 
 // Read a document (load by key)
 MyDocument result = collection.findByKey("nyc", MyDocument.class);
-result.getCity();  // => "New York"
+result.getCity();  // => "New York City"
 ```
 
 ### Querying RiakJson - findOne() and findAll()
