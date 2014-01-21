@@ -144,7 +144,7 @@ public class HttpTransport implements Transport {
     InputStream in = new ByteArrayInputStream(json.getBytes());
     String response_body = this.getJSON(this.sendPostOrPut(uri, PUT, in));
 
-    return (response_body != null) ? serializer.fromYZString(response_body, type) : null;
+    return (response_body != null) ? serializer.fromRJResult(response_body, type) : null;
   }
 
   public <T extends Document> QueryResult<T> findAll(String collection_name, Query<T> query) {
@@ -154,7 +154,7 @@ public class HttpTransport implements Transport {
     InputStream in = new ByteArrayInputStream(json.getBytes());
     String response_body = this.getJSON(this.sendPostOrPut(uri, PUT, in));
 
-    return (response_body != null) ? serializer.fromYZResult(response_body, type) : null;
+    return (response_body != null) ? serializer.fromRJResultSet(response_body, type) : null;
   }
 
   /* PRIVATE FUNS */

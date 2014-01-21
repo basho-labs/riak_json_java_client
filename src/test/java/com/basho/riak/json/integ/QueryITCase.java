@@ -49,7 +49,7 @@ public class QueryITCase {
     document.setKey(key);
     document.setFirstname("Walter");
     collection.insert(document);
-    await().atMost(5, SECONDS).until(documentIsReadable(document));
+    await().atMost(5, SECONDS).until(documentIsReadableByKey(document));
   }
 
   @After
@@ -72,7 +72,7 @@ public class QueryITCase {
     assertFalse(key.equals(resulting_key));
     assertNotNull(document.getKey());
 
-    await().atMost(5, SECONDS).until(documentIsReadable(document));
+    await().atMost(5, SECONDS).until(documentIsReadableByKey(document));
     assertTrue(collection.remove(document));
   }
 
@@ -99,15 +99,19 @@ public class QueryITCase {
     String[] names = {"Drew", "Dmitry", "Casey"};
     List<Document> documents = loadDocs(names);loadDocs(names);
 
-    // wait for yz index to get built
-    try { Thread.sleep(3500); } catch (Throwable t) { t.printStackTrace(); }
-
     String q = "{\"firstname\":\"Casey\"}";
-    Query<MyDocument> query = new Query<MyDocument>(q, MyDocument.class);
+    final Query<MyDocument> query = new Query<MyDocument>(q, MyDocument.class);
 
     try {
-      MyDocument document = collection.findOne(query);
-      assertNotNull(document);
+      // wait for documents to show up in Solr index
+      await().atMost(5, SECONDS).until(new Callable<Boolean>() {
+        public Boolean call() throws Exception {
+          MyDocument document = collection.findOne(query);
+          if (document != null)
+            assertEquals("Casey", document.getFirstname());
+          return document != null;
+        }
+      });
     }
     finally {
       unloadDocs(documents);
@@ -119,15 +123,19 @@ public class QueryITCase {
     String[] names = {"Drew", "Dmitry", "Casey"};
     List<Document> documents = loadDocs(names);
 
-     // wait for yz index to get built
-    try { Thread.sleep(3500); } catch (Throwable t) { t.printStackTrace(); }
-
     String q = "{\"*\":\"*\"}";
-    Query<MyDocument> query = new Query<MyDocument>(q, MyDocument.class);
+    final Query<MyDocument> query = new Query<MyDocument>(q, MyDocument.class);
     
     try {
-      QueryResult<MyDocument> qr = collection.findAll(query);
-      assertEquals(4, qr.getTotal());
+      // wait for documents to show up in Solr index
+      await().atMost(5, SECONDS).until(new Callable<Boolean>() {
+        public Boolean call() throws Exception {
+          QueryResult<MyDocument> qr = collection.findAll(query);
+          if (qr != null)
+            assertEquals(4, qr.getDocuments().size());
+          return qr != null;
+        }
+      });
     }
     finally {
       unloadDocs(documents);
@@ -153,7 +161,7 @@ public class QueryITCase {
     }
   }
 
-  private Callable<Boolean> documentIsReadable(final Document document) {
+  private Callable<Boolean> documentIsReadableByKey(final Document document) {
     return new Callable<Boolean>() {
       public Boolean call() throws Exception {
         Document found = collection.findByKey(document.getKey(), document.getClass());

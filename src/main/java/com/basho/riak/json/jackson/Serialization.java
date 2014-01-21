@@ -27,7 +27,7 @@ public interface Serialization {
   <T extends Document> T fromDocumentJsonString(String document_as_json, Class<T> type);
   <T extends Document> T fromDocumentInputStream(InputStream document_stream, Class<T> type);
 
-  // read YZ Query Results
-  <T extends Document> T fromYZString(String json, Class<T> type);
-  <T extends Document> QueryResult<T> fromYZResult(String json, Class<T> type);
+  // read RJ Query Results
+  <T extends Document> T fromRJResult(String json, Class<T> type);
+  <T extends Document> QueryResult<T> fromRJResultSet(String json, Class<T> type);
 }

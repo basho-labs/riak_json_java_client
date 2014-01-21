@@ -1,6 +1,6 @@
 package com.basho.riak.json;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -9,9 +9,9 @@ import java.util.Map;
  */
 public class QueryResult<T> {
   private int num_pages, per_page, page, total;
-  private List<T> documents;
+  private Collection<T> documents;
 
-  public QueryResult(List<T> documents, Map<String,Object> attrs) {
+  public QueryResult(Collection<T> documents, Map<String,Object> attrs) {
     this.num_pages = (Integer) attrs.get("num_pages");
     this.per_page = (Integer) attrs.get("per_page");
     this.page = (Integer) attrs.get("page");
@@ -32,7 +32,7 @@ public class QueryResult<T> {
     return total;
   }
 
-  public List<T> getDocuments() {
+  public Collection<T> getDocuments() {
     return documents;
   } 
 }

@@ -3,7 +3,7 @@ package com.basho.riak.json.jackson;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,8 +17,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Function;
 
 import static com.basho.riak.json.utils.StreamUtils.rewindStream;
+import static com.google.common.collect.Collections2.transform;
 
 /**
  * Implements the serialization concern.
@@ -108,13 +110,14 @@ public class DefaultSerializer implements Serialization {
     return rtnval;
   }
 
-  public <T extends Document> T fromYZString(String json, Class<T> type) {
+  public <T extends Document> T fromRJResult(String json, Class<T> type) {
+    if (json.equals("[]"))
+      return null;
     T rtnval = null;
-
     try {
       Map<String,Object> intermediate = new HashMap<String,Object>();
       intermediate = mapper.readValue(json, new TypeReference<HashMap<String,Object>>(){});
-      rtnval = this.fromYZ(intermediate, type);
+      rtnval = this.fromRJQuery(intermediate, type);
     }
     catch (JsonMappingException | JsonParseException | RuntimeException e) {
       throw unexpectedReadFailure(json.getBytes(), e);
@@ -125,18 +128,26 @@ public class DefaultSerializer implements Serialization {
     return rtnval;
   }
 
-  public <T extends Document> QueryResult<T> fromYZResult(String json, Class<T> type) {
+  public <T extends Document> QueryResult<T> fromRJResultSet(String json, final Class<T> type) {
     QueryResult<T> rtnval = null;
     try {
       Map<String,Object> intermediate = new HashMap<String,Object>();
       intermediate = mapper.readValue(json, new TypeReference<HashMap<String,Object>>(){});
       List<Map<String,Object>> data = (List) intermediate.remove("data");
 
-      List<T> documents = new ArrayList<T>();
-      for (int i = 0; i < data.size(); i++) {
-        Map<String,Object> json_map = data.get(i);
-        documents.add(this.fromYZ(json_map, type));
-      }
+      Function<Map<String,Object>, T> mapFun = new Function<Map<String,Object>, T>() {
+        public T apply(Map<String, Object> input) {
+          T rtnval = null;
+          try {
+            rtnval = fromRJQuery(input, type);
+          }
+          catch (IOException e) {
+            throw new RJSerializationError(input.toString().getBytes(), "Unexpected deserialization failure", e);
+          }
+          return rtnval;
+        }
+      };
+      Collection<T> documents = transform(data, mapFun);
       rtnval = new QueryResult<T>(documents, intermediate);
     }
     catch (JsonMappingException | JsonParseException | RuntimeException e) {
@@ -148,7 +159,7 @@ public class DefaultSerializer implements Serialization {
     return rtnval;
   }
 
-  private <T extends Document> T fromYZ(Map<String,Object> intermediate, Class<T> type) throws JsonMappingException, JsonProcessingException, IOException {
+  private <T extends Document> T fromRJQuery(Map<String,Object> intermediate, Class<T> type) throws JsonMappingException, JsonProcessingException, IOException {
     String key = (String) intermediate.remove("_id");
     String json = mapper.writeValueAsString(intermediate);
     T rtnval = mapper.readValue(json, type);
