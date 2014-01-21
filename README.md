@@ -152,7 +152,7 @@ results.perPage(); // results per page, defaults to 100
 #### Limiting Query Results
 ```java
 // Find all US cities, limit results to 10 per page
-String q = "{\"country\":\"USA\", \"\$per_page\":10}";
+String q = "{\"country\":\"USA\", \"$per_page\":10}";
 Query<MyDocument> query = new Query<MyDocument>(q, MyDocument.class);
 QueryResult<MyDocument> results = collection.findAll(query);
 results.perPage(); // => 10
@@ -161,7 +161,7 @@ results.perPage(); // => 10
 #### Page Offsets
 ```java
 // Find all US cities, retrieve 2nd page (zero-offset)
-String q = "{\"country\":\"USA\", \"\$per_page\":10, \"\$page\":1}";
+String q = "{\"country\":\"USA\", \"$per_page\":10, \"$page\":1}";
 Query<MyDocument> query = new Query<MyDocument>(q, MyDocument.class);
 QueryResult<MyDocument> results = collection.findAll(query);
 results.getPage(); // => 1
