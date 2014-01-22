@@ -31,15 +31,6 @@ class DocumentSpecTest extends FunSpec with MockitoSugar with Matchers {
     it ("may not have a key") {
       assert(document.getKey == null)
     }
-
-    it ("serializeable to json") {
-      val json = serializer.toJsonString(document)
-      assert(json != null)
-      
-      val result = serializer.fromDocumentJsonString(json, document.getClass())
-      assert(result != null)
-      result.getLength should be === document.getLength
-    }
   }
   
 }

@@ -7,7 +7,7 @@ Java Client Library for Riak JSON (https://github.com/basho-labs/riak_json)
 Since this library is not released to the public yet, build it locally:
 
 ```bash
-git clone git@github.com:basho/riak_json_java_client.git
+git clone git@github.com:basho-labs/riak_json_java_client.git
 cd riak_json_java_client
 mvn install
 ```

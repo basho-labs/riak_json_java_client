@@ -7,7 +7,7 @@ import java.util.Map;
  *
  * @author Randy Secrist
  */
-public class QueryResult<T> {
+public class QueryResult<T extends Document> {
   private int num_pages, per_page, page, total;
   private Collection<T> documents;
 

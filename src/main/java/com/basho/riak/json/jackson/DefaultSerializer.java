@@ -83,6 +83,8 @@ public class DefaultSerializer implements Serialization {
   }
 
   public <T extends Document> T fromDocumentJsonString(String json, Class<T> type) {
+    if (json == null || json.equals("[]"))
+      return null;
     T rtnval = null;
     try {
       rtnval = mapper.readValue(json, type);
@@ -111,7 +113,7 @@ public class DefaultSerializer implements Serialization {
   }
 
   public <T extends Document> T fromRJResult(String json, Class<T> type) {
-    if (json.equals("[]"))
+    if (json == null || json.equals("[]"))
       return null;
     T rtnval = null;
     try {
