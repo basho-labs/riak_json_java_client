@@ -167,6 +167,14 @@ QueryResult<MyDocument> results = collection.findAll(query);
 results.getPage(); // => 1
 ```
 
+#### Next Steps
+We need a query builder that eliminates the need to write queries
+as json strings.
+```java
+// Need to make this easier to write using Java
+String q = "{\"country\":\"USA\", \"$per_page\":10, \"$page\":1}";
+```
+
 ## Contributing
 
 1. Fork it
