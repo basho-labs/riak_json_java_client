@@ -95,7 +95,7 @@ MyDocument slc = new MyDocument();
 slc.setCity("Salt Lake City");
 slc.setState("UT");
 slc.setCountry("USA");
-String new_key = collection.insertDocument(slc);
+String new_key = collection.insert(slc);
 
 // New Key (# => e.g. 'EmuVX4kFHxxvlUVJj5TmPGgGPjP')
 // is auto assigned to document:
@@ -107,21 +107,21 @@ nyc.setKey("nyc");
 nyc.setCity("New York City");
 nyc.setState("NY");
 nyc.setCountry("USA");
-collection.insertDocument(nyc);
+collection.insert(nyc);
 
 MyDocument boston = new MyDocument();
 boston.setKey("boston");
 boston.setCity("Boston");
 boston.setState("MA");
 boston.setCountry("USA");
-collection.insertDocument(boston);
+collection.insert(boston);
 
 MyDocument sf = new MyDocument();
 sf.setKey("sf");
 sf.setCity("San Francisco");
 sf.setState("CA");
 sf.setCountry("USA");
-collection.insertDocument(sf);
+collection.insert(sf);
 
 // Read a document (load by key)
 MyDocument result = collection.findByKey("nyc", MyDocument.class);
