@@ -1,7 +1,14 @@
 package com.basho.riak.json;
 
 /**
- *
+ * This transport inteface defines the The minimum set of
+ * functionality needed by the client api to communicate
+ * with Riak JSON.
+ * 
+ * Functions are specific to the transport concern, but may
+ * support inner level concerns such as serialization and
+ * encryption.
+ * 
  * @author Randy Secrist
  */
 public interface Transport {
@@ -74,7 +81,19 @@ public interface Transport {
    */
   <T extends Document> T findByKey(String collection_name, String key, Class<T> type);
 
+  /**
+   * Returns the first document matched by the query.  Null otherwise.
+   * @param collection_name The name of the collection to query.
+   * @param query The query to invoke.
+   * @return The first matching document the database can locate, if any.
+   */
   <T extends Document> T findOne(String collection_name, Query<T> query);
 
+  /**
+   * Returns a QueryResult which contains multiple documents.  Null otherwise.
+   * @param collection_name The name of the collection to query.
+   * @param query The query to invoke.
+   * @return A QueryResult which contains many documents, if any.
+   */
   <T extends Document> QueryResult<T> findAll(String collection_name, Query<T> query);
 }

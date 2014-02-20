@@ -2,7 +2,9 @@ package com.basho.riak.json;
 
 
 /**
- *
+ * The uppermost (public API) for a collection of searchable
+ * documents stored using Riak JSON.
+ * 
  * @author Randy Secrist
  */
 public class Collection {
@@ -26,22 +28,44 @@ public class Collection {
     return transport.findByKey(name, key, type);
   }
 
+  /**
+   * Returns the first document matched by the query.  Null otherwise.
+   * @param query The query to invoke.
+   * @return The first matching document the database can locate, if any.
+   */
   public <T extends Document> T findOne(Query<T> query) {
     return transport.findOne(name, query);
   }
-  
+
+  /**
+   * Returns a QueryResult which contains multiple documents.  Null otherwise.
+   * @param query The query to invoke.
+   * @return A QueryResult which contains many documents, if any.
+   */
   public <T extends Document> QueryResult<T> findAll(Query<T> query) {
     return transport.findAll(name, query);
   }
 
+  /**
+   * Removes the schema from this collection.
+   * @return True if the delete operation is passed to RJ.
+   */
   public boolean deleteSchema() {
     return transport.deleteSchema(name);
   }
 
+  /**
+   * Returns the schema for this collection.
+   * @return The schema for this collection.
+   */
   public Schema getSchema() {
     return transport.getSchema(name);
   }
 
+  /**
+   * Returns true if this collection has a schema.  False otherwise.
+   * @return Returns true if collection has a schema, false otherwise.
+   */
   public boolean hasSchema() {
     return transport.getSchema(name) != null;
   }
@@ -62,6 +86,11 @@ public class Collection {
     return true;
   }
 
+  /**
+   * Removes a document from this collection.
+   * @param document The document to remove.
+   * @return True if the remove operation is passed to RJ.
+   */
   public boolean remove(Document document) {
     if (document == null || document.getKey() == null)
       return false;
