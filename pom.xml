@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>riak_json_java_client</groupId>
-  <artifactId>riak_json_java_client</artifactId>
+  <groupId>com.basho.riak</groupId>
+  <artifactId>riak-json</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <url>http://basho.com</url>
 
@@ -29,6 +29,12 @@
     </developer>
   </developers>
 
+  <scm>
+    <connection>scm:git:ssh://git@github.com/randysecrist/riak_json_java_client.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/randysecrist/riak_json_java_client.git</developerConnection>
+    <url>http://github.com/randysecrist/riak_json_java_client</url>
+  </scm>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -36,6 +42,19 @@
     <powermock.version>1.5</powermock.version>
     <scala.version>2.10.3</scala.version>
   </properties>
+
+  <distributionManagement>
+    <repository>
+      <id>repo</id>
+      <name>Randy's Releases</name>
+      <url>https://github.com/randysecrist/randysecrist-mvn-repo/raw/master/releases</url>
+    </repository>
+    <snapshotRepository>
+      <id>snapshot-repo</id>
+      <name>Randy's Snapshots</name>
+      <url>https://github.com/randysecrist/randysecrist-mvn-repo/raw/master/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
 
   <profiles>
     <profile>
