@@ -29,6 +29,7 @@ git clone git@github.com:basho-labs/riak_json_java_client.git
 cd riak_json_java_client
 mvn install
 ```
+
 ## Unit Testing
 To run both unit and integration tests:
 
@@ -43,6 +44,7 @@ To run just the unit tests:
 ```
 mvn test
 ```
+
 ## Usage
 ### Creating / Referencing a Collection
 ```java
