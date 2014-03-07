@@ -4,7 +4,25 @@
 Java Client Library for Riak JSON (https://github.com/basho-labs/riak_json)
 
 ## Installation
-Since this library is not released to the public yet, build it locally:
+This library has been released as a snapshot and can be referenced using Maven.
+
+```xml
+<dependency>
+  <groupId>com.basho.riak</groupId>
+  <artifactId>riak-json</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+</dependency>
+
+<repositories>
+  <repository>
+    <id>Basho Labs's - Snapshots</id>
+    <url>https://github.com/randysecrist/randysecrist-mvn-repo/raw/master/snapshots</url>
+  </repository>
+</repositories>
+```
+
+## Building from Source
+A java 1.7 and scala 2.10.3 runtime (to run the unit tests) are needed to build from source.
 
 ```bash
 git clone git@github.com:basho-labs/riak_json_java_client.git
